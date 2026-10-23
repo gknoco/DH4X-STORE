@@ -88,7 +88,7 @@ function persist(...which) {
 const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pix', 'pixNome', 'pixCidade', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
-  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], revs: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
+  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = str(L[k], /logo|Img/.test(k) ? 3e6 : 600); });
   if (!out.loja.nome) out.loja.nome = 'Minha Loja';
@@ -123,9 +123,6 @@ function cleanCatalog(c) {
       if (code && v > 0 && v <= 100) out.cupons[code] = v;
     });
   }
-  out.revs = (Array.isArray(c.revs) ? c.revs : []).slice(0, 200).filter(r => r && r.t).map(r => ({
-    n: str(r.n, 30) || 'Cliente', s: Math.min(5, Math.max(1, Math.floor(num(r.s, 5)))), t: str(r.t, 400), p: str(r.p, 80), d: num(r.d, now())
-  }));
   out.faq = (Array.isArray(c.faq) ? c.faq : []).slice(0, 50).filter(f => Array.isArray(f) && f[0]).map(f => [str(f[0], 200), str(f[1], 1000)]);
   return out;
 }
@@ -338,41 +335,6 @@ function viewOrder(o) {
 }
 const adminOrder = o => { const c = JSON.parse(JSON.stringify(o)); if (c.mp) delete c.mp.qr; return c; };
 
-/* ------------------------------ imagens por link -------------------------- */
-const IMG_EXT = /\.(png|jpe?g|gif|webp|avif|svg)$/i;
-const IMG_PAGE_HOST = /^(?:[a-z0-9-]+\.)*(ibb\.co|imgbb\.com)$/i;
-async function resolveImage(raw) {
-  let u;
-  try { u = new URL(String(raw || '').trim()); } catch (e) { throw httpErr(400, 'Link inválido'); }
-  if (!/^https?:$/.test(u.protocol)) throw httpErr(400, 'Link inválido');
-  u.protocol = 'https:';
-  const host = u.hostname.toLowerCase();
-  if (host === 'i.ibb.co' || IMG_EXT.test(u.pathname)) return u.href; // link direto da imagem
-  if (!IMG_PAGE_HOST.test(host)) throw httpErr(400, 'Use o link direto da imagem (termina em .jpg, .png...) ou um link do imgbb');
-  const r = await fetch(u.href, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LojaBot/1.0)', Accept: 'text/html' },
-    redirect: 'follow', signal: AbortSignal.timeout(10000)
-  });
-  let finalHost = '';
-  try { finalHost = new URL(r.url || u.href).hostname; } catch (e) { /* ignora */ }
-  if (!r.ok || !IMG_PAGE_HOST.test(finalHost)) throw httpErr(400, 'Não consegui abrir esse link do imgbb');
-  const html = (await r.text()).slice(0, 400000);
-  const metas = html.match(/<meta[^>]+>/gi) || [];
-  let found = '';
-  for (const t of metas) {
-    if (/(?:property|name)\s*=\s*["'](?:og:image|og:image:secure_url|twitter:image)["']/i.test(t)) {
-      const c = t.match(/content\s*=\s*["']([^"']+)["']/i);
-      if (c) { found = c[1]; break; }
-    }
-  }
-  if (!found) { const m2 = html.match(/https:\/\/i\.ibb\.co\/[A-Za-z0-9_\/.-]+\.(?:png|jpe?g|gif|webp|avif)/i); if (m2) found = m2[0]; }
-  found = found.replace(/&amp;/g, '&');
-  let fu;
-  try { fu = new URL(found); } catch (e) { throw httpErr(400, 'Não encontrei a imagem nesse link. Abra a foto no imgbb e copie o "Link direto".'); }
-  if (fu.protocol !== 'https:' || !IMG_PAGE_HOST.test(fu.hostname)) throw httpErr(400, 'Não encontrei a imagem nesse link');
-  return fu.href;
-}
-
 /* ------------------------------ avaliações -------------------------------- */
 const publicReviews = () => S.core.reviews.filter(r => r.ok).sort((a, b) => b.d - a.d).slice(0, 30).map(r => ({ n: r.n, s: r.s, t: r.t, p: r.p, d: r.d }));
 
@@ -457,7 +419,7 @@ async function api(req, res, u) {
       q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
       return q;
     });
-    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: (c.revs || []).concat(publicReviews()).sort((a, b) => (b.d || 0) - (a.d || 0)).slice(0, 40), pixAuto: !!MP_TOKEN });
+    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), pixAuto: !!MP_TOKEN });
   }
   if (m === 'POST' && p === '/api/coupon') {
     if (limited(ip, 'coupon', 30, 600000)) throw httpErr(429, 'Muitas tentativas');
@@ -469,17 +431,6 @@ async function api(req, res, u) {
     if (limited(ip, 'order', 10, 600000)) throw httpErr(429, 'Muitos pedidos em pouco tempo. Aguarde alguns minutos.');
     const o = await createOrder(await readBody(req, 50000), req);
     return send(res, 201, Object.assign({ token: o.token }, viewOrder(o)));
-  }
-  /* Gera o pedido + Pix no Mercado Pago e devolve QR Code (base64) e copia e cola */
-  if (m === 'POST' && p === '/api/pix') {
-    if (limited(ip, 'order', 10, 600000)) throw httpErr(429, 'Muitos pedidos em pouco tempo. Aguarde alguns minutos.');
-    const o = await createOrder(await readBody(req, 50000), req);
-    const v = viewOrder(o);
-    return send(res, 201, Object.assign({
-      token: o.token,
-      qr_code: o.mp ? o.mp.code : '',
-      qr_code_base64: o.mp ? o.mp.qr : ''
-    }, v));
   }
   if (m === 'POST' && p === '/api/orders/find') {
     if (limited(ip, 'find', 10, 600000)) throw httpErr(429, 'Muitas tentativas');
@@ -535,10 +486,6 @@ async function api(req, res, u) {
       S.catalog = cleanCatalog(await readBody(req, 25e6));
       await persist('catalog');
       return send(res, 200, { ok: true, catalog: S.catalog });
-    }
-    if (m === 'POST' && p === '/api/admin/resolve-image') {
-      const b = await readBody(req, 3000);
-      return send(res, 200, { url: await resolveImage(b.url) });
     }
     if (m === 'GET' && p === '/api/admin/keys') return send(res, 200, S.core.keys);
     if (m === 'PUT' && (mm = p.match(/^\/api\/admin\/keys\/([^/]{1,40})$/))) {

@@ -134,8 +134,31 @@ function seedCatalog() {
     return cleanCatalog(raw);
   } catch (e) {
     return cleanCatalog({
-      loja: { nome: 'DH4X STORE', aviso: '', heroT: 'Produtos digitais com entrega imediata', heroP: 'Pague com Pix e receba na hora.', whats: 'https://wa.me/5500000000000', discord: 'https://discord.gg/' },
-      cats: [{ id: 'cat1', nome: 'Categoria 1' }], prods: [], cupons: {}, faq: [], termos: 'Edite os termos no painel admin.', priv: 'Edite a política de privacidade no painel admin.'
+      loja: {
+        nome: 'DH4X STORE', aviso: 'Entrega digital rápida e suporte oficial DH4X',
+        heroT: 'MELHOR LOJA DE XIT DO CENÁRIO', heroP: 'Produtos digitais com entrega imediata',
+        whats: 'https://wa.me/15089658290?s=t', discord: 'https://discord.gg/SHkAnAWNVd',
+        email: 'gknovodcdc@gmail.com', cor: '#7c5cff', selo: 'sim',
+        pixInfo: 'Pague pelo QR Code ou Pix Copia e Cola. A aprovação é automática pelo Mercado Pago.'
+      },
+      cats: [
+        { id: 'android', nome: 'Android', desc: 'Produtos Android com entrega digital imediata.', on: true },
+        { id: 'ios', nome: 'iOS', desc: 'Soluções iOS sem jailbreak e com suporte DH4X.', on: true },
+        { id: 'pc', nome: 'PC', desc: 'Produtos para PC e Free Fire.', on: true }
+      ],
+      prods: [
+        { id: 'painel-auxiliar-android', c: 'android', n: 'Painel Auxiliar Android', p: 25, tag: 'Populares', d: 'Painel auxiliar Android com entrega digital imediata e suporte da DH4X STORE.', f: ['Entrega imediata após aprovação do Pix', 'Suporte oficial DH4X'], ops: [], on: true },
+        { id: 'xit-ios-no-jailbreak', c: 'ios', n: 'Xit iOS No-Jailbreak', p: 35, tag: 'Recomendado', d: 'Xit para iOS sem necessidade de jailbreak, com instruções de ativação após a confirmação do pagamento.', f: ['Sem jailbreak', 'Entrega digital imediata', 'Suporte oficial DH4X'], ops: [], on: true },
+        { id: 'bypass-pc-free-fire', c: 'pc', n: 'Bypass PC Free Fire', p: 45, tag: 'VIP', d: 'Bypass para PC Free Fire com entrega digital e suporte após a compra.', f: ['Acesso digital imediato', 'Suporte VIP DH4X'], ops: [], on: true }
+      ],
+      cupons: {}, faq: [
+        ['Como recebo meu produto?', 'Após a aprovação automática do Pix, a entrega fica disponível em Meus pedidos.'],
+        ['Quais formas de pagamento?', 'Aceitamos Pix pelo QR Code e pelo código Copia e Cola.'],
+        ['E se eu tiver problemas?', 'Fale com o suporte pelo Discord ou WhatsApp.'],
+        ['O pagamento é aprovado automaticamente?', 'Sim. O Mercado Pago verifica o pagamento automaticamente.']
+      ],
+      termos: 'Termos de serviço\nProdutos digitais são entregues após a aprovação do pagamento. Não compartilhe dados de terceiros.',
+      priv: 'Política de privacidade\nOs dados do pedido são usados para processar o pagamento e entregar o produto.'
     });
   }
 }

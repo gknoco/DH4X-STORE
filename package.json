@@ -1,19 +1,16 @@
+
 {
-  "name": "dh4x-store-backend",
+  "name": "dh4x-store",
   "version": "1.0.0",
-  "description": "Backend DH4X Store",
+  "description": "Loja DH4X STORE com Pix automático (Mercado Pago) e entrega de keys",
   "main": "server.js",
-  "license": "MIT",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "mercadopago": "^2.0.0",
-    "pg": "^8.11.3"
-  },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
   }
 }

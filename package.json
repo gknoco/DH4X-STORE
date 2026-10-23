@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Backend DH4X Store",
   "main": "server.js",
+  "license": "MIT",
   "scripts": {
     "start": "node server.js"
   },

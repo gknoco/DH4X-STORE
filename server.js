@@ -93,7 +93,7 @@ function cleanCatalog(c) {
   const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = /logo|Img/.test(k) ? img(L[k]) : str(L[k], 600); });
-  if (out.loja.nome == null) out.loja.nome = '';
+  if (!out.loja.nome) out.loja.nome = 'DH4X STORE';
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
     if (!x || !x.id || ids.has(String(x.id))) return;
@@ -132,17 +132,9 @@ function seedCatalog() {
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed.json'), 'utf8'));
     return cleanCatalog(raw);
-  } catch (e) { /* tenta o index.html */ }
-  try {
-    const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-    const m = html.match(/<script id="dbd" type="application\/json">([\s\S]*?)<\/script>/);
-    const raw = JSON.parse(m[1]);
-    const c = cleanCatalog(raw);
-    if (c.prods.length) return c;
-    throw new Error('index.html sem produtos');
   } catch (e) {
     return cleanCatalog({
-      loja: { nome: 'DH4X STORE', aviso: '', heroT: 'Produtos digitais com entrega imediata', heroP: 'Pague com Pix e receba na hora.', whats: 'https://wa.me/5500000000000', discord: 'https://discord.gg/' },
+      loja: { nome: 'DH4X STORE', aviso: '', heroT: 'MELHOR LOJA DE XIT DO SENARIO', heroP: 'Pague com Pix e receba na hora.', whats: 'https://wa.me/', discord: 'https://discord.gg/' },
       cats: [{ id: 'cat1', nome: 'Categoria 1' }], prods: [], cupons: {}, faq: [], termos: 'Edite os termos no painel admin.', priv: 'Edite a política de privacidade no painel admin.'
     });
   }
@@ -213,7 +205,7 @@ async function createPix(o, req) {
   const parts = o.nome.split(/\s+/);
   const body = {
     transaction_amount: o.total,
-    description: ('Pedido #' + o.n + ' - ' + (S.catalog.loja.nome || 'Loja')).slice(0, 200),
+    description: ('Pedido #' + o.n + ' - ' + (S.catalog.loja.nome || 'DH4X STORE')).slice(0, 200),
     payment_method_id: 'pix',
     external_reference: 'DH4X-' + o.n,
     date_of_expiration: mpDate(o.expiresAt),
@@ -422,7 +414,7 @@ function send(res, status, data, extra) {
   res.writeHead(status, Object.assign({
     'Content-Type': typeof data === 'string' ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8',
     'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'SAMEORIGIN',
-    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   }, extra || {}));
   res.end(body);
 }
@@ -616,10 +608,6 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   const loaded = await store.load();
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
   S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.seq = S.core.seq || 0;
-  if (loaded && S.catalog && (!S.catalog.prods || !S.catalog.prods.length) && (!S.catalog.cats || S.catalog.cats.length <= 1)) {
-    const sd = seedCatalog();
-    if (sd.prods.length) { S.catalog = sd; await persist('catalog'); }
-  }
   if (!loaded) await persist('catalog', 'core');
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
   if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');

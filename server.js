@@ -30,6 +30,8 @@ const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 const num = (v, d = 0) => (Number.isFinite(+v) ? +v : d);
 const round2 = v => Math.round((+v + Number.EPSILON) * 100) / 100;
 const rid = n => crypto.randomBytes(n).toString('base64url');
+const IMG_RE = /^(https:\/\/[^\s"'()<>\\]{4,2000}|data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,[A-Za-z0-9+\/=]+)$/;
+const img = v => { v = String(v == null ? '' : v).trim(); return v.length <= 3e6 && IMG_RE.test(v) ? v : ''; };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const now = () => Date.now();
 const log = (...a) => console.log(new Date().toISOString(), ...a);
@@ -90,14 +92,14 @@ function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
   const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
-  LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = str(L[k], /logo|Img/.test(k) ? 3e6 : 600); });
+  LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = /logo|Img/.test(k) ? img(L[k]) : str(L[k], 600); });
   if (!out.loja.nome) out.loja.nome = 'Minha Loja';
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
     if (!x || !x.id || ids.has(String(x.id))) return;
     ids.add(String(x.id));
     const o = { id: str(x.id, 40), nome: str(x.nome, 60) || 'Categoria', desc: str(x.desc, 300), on: x.on !== false };
-    if (x.img) o.img = str(x.img, 3e6);
+    if (img(x.img)) o.img = img(x.img);
     out.cats.push(o);
   });
   const pids = new Set();
@@ -107,7 +109,7 @@ function cleanCatalog(c) {
     const o = { id: str(x.id, 40), c: str(x.c, 40), n: str(x.n, 120) || 'Produto', p: Math.max(0, round2(num(x.p))), d: str(x.d, 6000), on: x.on !== false };
     if (x.de != null && x.de !== '' && num(x.de) > 0) o.de = round2(num(x.de));
     if (x.tag) o.tag = str(x.tag, 30);
-    if (x.img) o.img = str(x.img, 3e6);
+    if (img(x.img)) o.img = img(x.img);
     if (x.e != null && x.e !== '' && Number.isFinite(+x.e)) o.e = Math.max(0, Math.floor(+x.e));
     o.f = (Array.isArray(x.f) ? x.f : []).slice(0, 20).map(v => str(v, 200)).filter(Boolean);
     o.ops = (Array.isArray(x.ops) ? x.ops : []).slice(0, 30).filter(z => z && z.k).map(z => {
@@ -335,6 +337,25 @@ function viewOrder(o) {
 }
 const adminOrder = o => { const c = JSON.parse(JSON.stringify(o)); if (c.mp) delete c.mp.qr; return c; };
 
+/* ------------------------------ imagens por link -------------------------- */
+const IMG_HOSTS = (ENV.IMG_RESOLVE_HOSTS || 'ibb.co,www.ibb.co,imgbb.com,www.imgbb.com').split(',').map(x => x.trim()).filter(Boolean);
+async function resolveImage(raw) {
+  let u;
+  try { u = new URL(String(raw || '').trim()); } catch (e) { throw httpErr(400, 'Link inválido'); }
+  if (u.protocol !== 'https:' && !(ENV.IMG_RESOLVE_ALLOW_HTTP && u.protocol === 'http:')) throw httpErr(400, 'Use um link que comece com https://');
+  if (u.hostname === 'i.ibb.co' || /\.(png|jpe?g|webp|gif)$/i.test(u.pathname) || !IMG_HOSTS.includes(u.hostname)) {
+    if (!img(u.href)) throw httpErr(400, 'Link de imagem inválido');
+    return u.href;
+  }
+  const r = await fetch(u.href, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DH4XStore/1.0)', Accept: 'text/html' }, signal: AbortSignal.timeout(10000), redirect: 'follow' });
+  if (!r.ok) throw httpErr(400, 'Não consegui abrir esse link (' + r.status + ')');
+  const html = (await r.text()).slice(0, 400000);
+  const m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i) || html.match(/<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']/i);
+  const out = m && m[1].replace(/&amp;/g, '&');
+  if (!out || !img(out)) throw httpErr(400, 'Não encontrei a imagem nesse link. Copie o "Link direto" do imgbb (começa com https://i.ibb.co/).');
+  return out;
+}
+
 /* ------------------------------ avaliações -------------------------------- */
 const publicReviews = () => S.core.reviews.filter(r => r.ok).sort((a, b) => b.d - a.d).slice(0, 30).map(r => ({ n: r.n, s: r.s, t: r.t, p: r.p, d: r.d }));
 
@@ -427,10 +448,12 @@ async function api(req, res, u) {
     if (!S.catalog.cupons[code]) throw httpErr(404, 'Cupom inválido');
     return send(res, 200, { code, pct: S.catalog.cupons[code] });
   }
-  if (m === 'POST' && p === '/api/orders') {
+  if (m === 'POST' && (p === '/api/orders' || p === '/api/pix')) {
     if (limited(ip, 'order', 10, 600000)) throw httpErr(429, 'Muitos pedidos em pouco tempo. Aguarde alguns minutos.');
     const o = await createOrder(await readBody(req, 50000), req);
-    return send(res, 201, Object.assign({ token: o.token }, viewOrder(o)));
+    const out = Object.assign({ token: o.token }, viewOrder(o));
+    if (p === '/api/pix') Object.assign(out, { payment_id: o.mp ? o.mp.id : null, qr_code: o.mp ? o.mp.code : null, qr_code_base64: o.mp ? o.mp.qr : null, copia_e_cola: o.mp ? o.mp.code : null });
+    return send(res, 201, out);
   }
   if (m === 'POST' && p === '/api/orders/find') {
     if (limited(ip, 'find', 10, 600000)) throw httpErr(429, 'Muitas tentativas');
@@ -487,6 +510,7 @@ async function api(req, res, u) {
       await persist('catalog');
       return send(res, 200, { ok: true, catalog: S.catalog });
     }
+    if (m === 'POST' && p === '/api/admin/resolve-image') { const b = await readBody(req, 5000); return send(res, 200, { url: await resolveImage(b.url) }); }
     if (m === 'GET' && p === '/api/admin/keys') return send(res, 200, S.core.keys);
     if (m === 'PUT' && (mm = p.match(/^\/api\/admin\/keys\/([^/]{1,40})$/))) {
       const pid = decodeURIComponent(mm[1]);
@@ -544,8 +568,8 @@ const server = http.createServer(async (req, res) => {
   try {
     const u = new URL(req.url, 'http://localhost');
     const origin = req.headers.origin;
-    if (CORS.length && origin && CORS.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
+    if (u.pathname.startsWith('/api/') && (!CORS.length || (origin && CORS.includes(origin)))) {
+      res.setHeader('Access-Control-Allow-Origin', CORS.length ? origin : '*');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Vary', 'Origin');

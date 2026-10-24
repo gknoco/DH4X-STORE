@@ -19,10 +19,9 @@ const MP_API = (ENV.MERCADO_PAGO_API_URL || 'https://api.mercadopago.com').repla
 const ADMIN_PW = (ENV.ADMIN_PASSWORD || 'GK').trim().toLowerCase();
 const PUBLIC_URL = (ENV.PUBLIC_URL || ENV.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
 const WH_SECRET = (ENV.MERCADO_PAGO_WEBHOOK_SECRET || '').trim();
-// Por padrão, um pedido Pix permanece aberto por 24 horas. Pode ser reduzido
-// no Render com PIX_EXPIRE_MIN, sem permitir menos de 30 minutos.
-const EXPIRE_MIN = Math.max(30, Number.isFinite(+ENV.PIX_EXPIRE_MIN) && +ENV.PIX_EXPIRE_MIN > 0 ? +ENV.PIX_EXPIRE_MIN : 1440);
-const MANUAL_HOLD_MIN = Math.max(EXPIRE_MIN, 1440); // reserva manual também expira em 24h
+// Cada pagamento Pix e respectiva reserva de estoque expiram após 20 minutos.
+const EXPIRE_MIN = 20;
+const MANUAL_HOLD_MIN = 20;
 const DATABASE_URL = ENV.DATABASE_URL || '';
 const DATA_FILE = ENV.DATA_FILE || path.join(__dirname, 'data', 'db.json');
 const CORS = (ENV.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -333,6 +332,8 @@ async function createOrder(b, req) {
       unit = o.p; nm = p.n + ' – ' + o.n; ok = o.k;
     }
     if (!(unit > 0)) throw httpErr(400, 'Produto sem preço: ' + p.n);
+    const delivery = S.core.keys[p.id] || {};
+    if (!(p.ops && p.ops.length) && !tracked(p.id, '') && poolLen(p.id, '') === 0 && !str(delivery.t, 6000)) throw httpErr(409, 'Produto esgotado: ' + p.n);
     const ex = list.find(i => i.id === p.id && i.o === ok);
     if (ex) { ex.q += q; if (ex.q > 20) throw httpErr(400, 'Quantidade inválida'); continue; }
     const kr = S.core.keys[p.id] || {};
@@ -570,7 +571,11 @@ async function api(req, res, u) {
     const c = S.catalog;
     const prods = c.prods.map(x => {
       const q = Object.assign({}, x);
-      if (!(x.ops && x.ops.length) && tracked(x.id, '')) q.e = poolLen(x.id, '');
+      if (!(x.ops && x.ops.length)) {
+        const k = S.core.keys[x.id] || {}, available = poolLen(x.id, '');
+        if (tracked(x.id, '') || available > 0) q.e = available;
+        else if (!str(k.t, 6000)) q.e = 0;
+      }
       q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
       return q;
     });
@@ -599,24 +604,31 @@ async function api(req, res, u) {
   if (m === 'GET' && (mm = p.match(/^\/api\/orders\/([A-Za-z0-9_-]{20,40})$/))) {
     const o = orderByToken(mm[1]);
     if (!o) throw httpErr(404, 'Pedido não encontrado');
-    if (o.status === 'pending' && o.mp && MP_TOKEN && now() - (lastCheck.get(o.n) || 0) > 6000) {
+    const expiredAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
+    if (o.status === 'pending' && o.mp && MP_TOKEN && (now() >= expiredAt || now() - (lastCheck.get(o.n) || 0) > 6000)) {
       lastCheck.set(o.n, now());
       try { await syncPayment(o.mp.id); } catch (e) { log('Falha ao consultar pagamento', o.n, e.message); }
+    }
+    if (o.status === 'pending' && now() >= expiredAt) {
+      await expireOrder(o, 'Pix expirado após 20 minutos');
+      await cancelMp(o);
     }
     return send(res, 200, viewOrder(o));
   }
   if (m === 'POST' && p === '/api/reviews') {
     if (limited(ip, 'review', 10, 600000)) throw httpErr(429, 'Muitas tentativas');
-    const b = await readBody(req, 10000), o = orderByToken(str(b.token, 60));
-    if (!o || o.status !== 'approved') throw httpErr(400, 'Só é possível avaliar pedidos aprovados');
-    if (o.reviewed) throw httpErr(409, 'Este pedido já foi avaliado');
-    const g = v => Math.min(5, Math.max(1, Math.floor(num(v, 5)))), t = str(b.t, 400), n = str(b.nome, 30);
+    const b = await readBody(req, 10000), token = str(b.token, 60), o = token ? orderByToken(token) : null;
+    if (token && (!o || o.status !== 'approved')) throw httpErr(400, 'Só é possível avaliar pedidos aprovados');
+    if (o && o.reviewed) throw httpErr(409, 'Este pedido já foi avaliado');
+    if (b.show !== true) throw httpErr(400, 'Autorize a exibição da avaliação');
+    const g = v => Math.min(5, Math.max(1, Math.floor(num(v, 5)))), t = str(b.t, 400), n = str(b.nome, 30), product = S.catalog.prods.find(x => x.id === str(b.product, 40));
     if (t.length < 10) throw httpErr(400, 'Escreva pelo menos 10 caracteres');
     if (n.length < 2) throw httpErr(400, 'Informe seu nome');
-    S.core.reviews.push({ id: rid(6), n, s: g(b.s), e: g(b.e), a: g(b.a), q: g(b.q), rec: b.rec ? 1 : 0, t, p: o.items[0].n, d: now(), ok: true, on: o.n });
-    o.reviewed = true;
+    if (!product && !o) throw httpErr(400, 'Produto da avaliação não encontrado');
+    S.core.reviews.push({ id: rid(6), n, s: g(b.s), e: g(b.e), a: g(b.a), q: g(b.q), rec: b.rec ? 1 : 0, t, p: product ? product.n : (o.items[0].n || ''), d: now(), ok: true, on: o ? o.n : null });
+    if (o) o.reviewed = true;
     await persist('core');
-    return send(res, 201, { ok: true });
+    return send(res, 201, { ok: true, published: true });
   }
   if ((m === 'POST' || m === 'GET') && (p === '/api/webhook/mercadopago' || p === '/api/mercadopago/webhook')) {
     let b = {};
@@ -733,12 +745,13 @@ const server = http.createServer(async (req, res) => {
 setInterval(async () => {
   try {
     for (const o of Object.values(S.core.orders)) {
-      if (o.status !== 'pending' || now() <= o.expiresAt + 60000) continue;
-      if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { /* tenta de novo no próximo ciclo */ } }
-      if (o.status === 'pending') { await expireOrder(o, 'Tempo esgotado'); cancelMp(o); }
+      const expiresAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
+      if (o.status !== 'pending' || now() < expiresAt) continue;
+      if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { /* tenta cancelar mesmo se o provedor estiver indisponível */ } }
+      if (o.status === 'pending') { await expireOrder(o, 'Pix expirado após 20 minutos'); await cancelMp(o); }
     }
   } catch (e) { console.error('Rotina de expiração:', e.message); }
-}, 60000).unref();
+}, 15000).unref();
 
 process.on('unhandledRejection', e => console.error('Promessa rejeitada:', e && e.message || e));
 process.on('uncaughtException', e => console.error('Exceção:', e && e.stack || e));
@@ -749,6 +762,13 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
   S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.users = S.core.users || {}; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
   if (!loaded) await persist('catalog', 'core');
+  // Processa pagamentos vencidos na inicialização (por exemplo, após o serviço dormir no Render).
+  for (const o of Object.values(S.core.orders)) {
+    const expiresAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
+    if (o.status !== 'pending' || now() < expiresAt) continue;
+    if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { log('Falha ao verificar Pix vencido na inicialização', o.n, e.message); } }
+    if (o.status === 'pending') { await expireOrder(o, 'Pix expirado após 20 minutos'); await cancelMp(o); }
+  }
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
   if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');
   server.listen(PORT, '0.0.0.0', () => log('DH4X STORE rodando na porta', PORT, '| Pix automático:', MP_TOKEN ? 'ligado' : 'desligado', '| banco:', DATABASE_URL ? 'Postgres' : 'arquivo'));

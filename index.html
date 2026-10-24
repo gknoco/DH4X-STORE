@@ -1,479 +1,753 @@
-<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Minha Loja – Produtos digitais com entrega imediata</title>
-<style>
-:root{--bg:#0d1016;--s:#161b24;--s2:#1d2330;--l:#263040;--t:#eef1f6;--m:#9aa5b5;--a:#7c5cff;--a2:#5f42e6;--ok:#2fbf71;--er:#f0556a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-:root[data-theme=light]{--bg:#f5f6fa;--s:#fff;--s2:#eef0f6;--l:#dfe3ec;--t:#14171d;--m:#5b6676;color-scheme:light}
-*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--t);font:16px/1.55 "Segoe UI",system-ui,Helvetica,Arial,sans-serif}
-a{color:inherit;text-decoration:none}button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0}
-:focus-visible{outline:2px solid var(--a);outline-offset:2px}
-.w{max-width:1120px;margin:0 auto;padding:0 18px}
-.bar{background:var(--a);color:#fff;text-align:center;font-size:.85rem;padding:6px 10px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--l)}
-header .w{display:flex;align-items:center;gap:14px;height:62px}
-.logo{font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
-.nav{display:flex;gap:16px;color:var(--m);font-size:.95rem}.nav a:hover{color:var(--t)}
-.sp{flex:1}
-.b{background:var(--a);color:#fff;padding:10px 18px;border-radius:9px;font-weight:600;display:inline-block;text-align:center}.b:hover{background:var(--a2)}
-.g{background:transparent;color:var(--t);border:1px solid var(--l)}.g:hover{background:var(--s)}
-.sm{padding:6px 12px;font-size:.85rem}
-#cc{background:#fff;color:var(--a);border-radius:99px;padding:0 7px;margin-left:6px;font-size:.8rem}
-@media(max-width:760px){.nav{display:none}}
-.hero{margin:28px 0;border-radius:18px;padding:52px 28px;background:radial-gradient(900px 300px at 80% 0,rgba(124,92,255,.35),transparent),linear-gradient(135deg,var(--s2),var(--s));border:1px solid var(--l)}
-.hero h1{font-size:clamp(1.8rem,5vw,3rem);line-height:1.1;letter-spacing:-.03em;max-width:17ch}
-.hero p{color:var(--m);max-width:54ch;margin:14px 0 24px}
-.hero .b+.b{margin-left:8px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
-.stat{background:var(--s);border:1px solid var(--l);border-radius:12px;padding:16px}.stat b{font-size:1.4rem;display:block}.stat span{color:var(--m);font-size:.85rem}
-h2{font-size:1.4rem;margin:38px 0 14px}
-.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
-.cat{background:var(--s);border:1px solid var(--l);border-radius:12px;padding:18px;display:flex;gap:12px;align-items:center;font-weight:700}.cat:hover{border-color:var(--a)}
-.ic{width:42px;height:42px;border-radius:10px;background:var(--a);display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
-.tools{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
-.tools input,.tools select{background:var(--s);border:1px solid var(--l);border-radius:9px;padding:10px 12px}.tools input{flex:1;min-width:180px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-.card{background:var(--s);border:1px solid var(--l);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.th{aspect-ratio:16/9;background:linear-gradient(135deg,var(--a),#1c2233);display:grid;place-items:center;color:#fff;font-weight:800;position:relative}
-.tag{position:absolute;top:10px;left:10px;background:var(--ok);color:#fff;font-size:.72rem;padding:2px 8px;border-radius:99px}
-.bd{padding:15px;display:flex;flex-direction:column;gap:5px;flex:1}.bd small{color:var(--m)}
-.pr{font-size:1.2rem;font-weight:800;margin-top:auto;padding-top:8px}.pr s{color:var(--m);font-size:.85rem;font-weight:400;margin-left:6px}
-.bd .b{margin-top:8px}
-.box{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:22px}
-.two{display:grid;grid-template-columns:1.1fr 1fr;gap:22px}@media(max-width:760px){.two{grid-template-columns:1fr}}
-.crumb{color:var(--m);font-size:.9rem;margin:20px 0}
-ul.f{padding-left:18px;color:var(--m)}
-.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.fld input,.fld textarea,.fld select{background:var(--bg);border:1px solid var(--l);border-radius:99px;padding:11px 12px}
-.form{max-width:420px;margin:36px auto}
-.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--l)}
-.qty{display:inline-flex;gap:8px;align-items:center}.qty button{width:26px;height:26px;border-radius:7px;background:var(--s2);color:var(--t)}
-details{background:var(--s);border:1px solid var(--l);border-radius:10px;padding:14px 16px;margin-bottom:10px}summary{cursor:pointer;font-weight:600}details p{color:var(--m);margin-top:8px}
-.rv{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.pix{background:#fff;color:#000;width:150px;height:150px;margin:12px auto;display:grid;place-items:center;border-radius:10px;font-size:.8rem;text-align:center;padding:8px}
-.code{background:var(--bg);border:1px dashed var(--l);border-radius:8px;padding:8px;word-break:break-all;font-size:.8rem;color:var(--m)}
-#dr{position:fixed;inset:0 0 0 auto;width:min(380px,100%);background:var(--s);border-left:1px solid var(--l);transform:translateX(100%);transition:transform .25s;z-index:10;padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
-#dr.o{transform:none}#its{flex:1;overflow:auto;margin:12px 0}
-.tot{display:flex;justify-content:space-between;font-weight:800;margin:8px 0}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:9px;z-index:20;display:none}
-.ai{background:var(--bg);border:1px solid var(--l);border-radius:9px;padding:10px 12px}
-#sh{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:15;display:none;align-items:flex-end;justify-content:center}#sh.o{display:flex}.shc{background:var(--s);width:min(520px,100%);border-radius:18px 18px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:80vh;overflow:auto}.grab{width:44px;height:4px;border-radius:99px;background:var(--l);margin:0 auto 12px}.op{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--s2);border:1px solid var(--l);border-radius:10px;padding:13px 14px;margin-bottom:8px;color:var(--t)}.op:hover{border-color:var(--a)}.op:disabled{opacity:.5;cursor:not-allowed}.op small{color:var(--m);display:block}
-footer{border-top:1px solid var(--l);margin-top:56px;padding:34px 0;color:var(--m);font-size:.9rem}
-footer .w{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px}@media(max-width:760px){footer .w{grid-template-columns:1fr}}
-footer a{display:block}footer a:hover{color:var(--t)}
-.pill{display:inline-block;background:var(--s2);border-radius:99px;padding:2px 10px;font-size:.8rem;color:var(--m)}
-@media (prefers-reduced-motion:reduce){#dr{transition:none}html{scroll-behavior:auto}}
+'use strict';
+/* =====================================================================
+   DH4X STORE — servidor (Node 18+)
+   - Serve o site (index.html) e a API na mesma URL
+   - Gera Pix no Mercado Pago (QR Code + copia e cola)
+   - Webhook aprova o pedido sozinho quando o Pix cai e entrega as keys
+   - Painel admin protegido por senha (ADMIN_PASSWORD, padrão "GK")
+   Variáveis de ambiente: veja o README.md
+   ===================================================================== */
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
-header .w{height:62px}
-.logo{display:flex;align-items:center;gap:10px}
-#lgi{width:44px;height:44px;border-radius:12px;object-fit:cover}.vf{color:var(--a)}
-.ib{width:46px;height:46px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:var(--t);display:grid;place-items:center;position:relative;flex:none}
-.ib:hover{background:rgba(255,255,255,.14)}
-.ib.cart{background:var(--a);border-color:var(--a);color:#fff}
-#cc{position:absolute;top:-6px;right:-6px;margin:0;background:#fff;color:#000;font-size:.7rem;font-weight:700;min-width:19px;line-height:19px;padding:0 5px;text-align:center;border-radius:99px}
-header .w{gap:10px}
-.cats{grid-template-columns:repeat(3,1fr);gap:12px}
-.cc{position:relative;aspect-ratio:3/4;border-radius:26px;border:2px solid var(--l);background:linear-gradient(135deg,var(--a),#1c2233) center/cover;display:flex;align-items:flex-end;justify-content:center;padding:12px;font-weight:800;text-transform:uppercase;overflow:hidden}
-.cc span{background:rgba(0,0,0,.6);padding:6px 12px;border-radius:8px;text-align:center;font-size:.9rem;color:#fff}.cc:hover{border-color:var(--a)}
-.cbar{display:flex;align-items:center;gap:10px;background:var(--s);border:1px solid var(--l);border-radius:18px;padding:0 16px;margin:28px 0 4px;color:var(--m)}
-.cbar select{flex:1;background:transparent;border:0;color:var(--t);font-weight:700;text-transform:uppercase;padding:16px 0}.cbar option{background:var(--s);color:var(--t)}
-.pc{display:inline-block;border:2px solid var(--a);border-radius:18px;padding:12px 22px;font-weight:800;text-transform:uppercase;margin:28px 0 16px;font-size:1.05rem}
-.grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
-@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}.pt{font-size:.9rem}}
-.card{border-radius:24px;border:2px solid rgba(255,255,255,.12)}.card:hover{border-color:var(--a)}
-.th{background-size:cover;background-position:center;margin:10px 10px 0;border-radius:16px;aspect-ratio:16/10}
-.pt{text-transform:uppercase;line-height:1.25;display:block}
-.old{display:flex;align-items:center;gap:8px;color:var(--m)}.old s{font-size:.9rem}
-.off{background:var(--s2);color:var(--a);border:1px solid var(--a);border-radius:8px;padding:0 8px;font-size:.8rem;font-weight:700}
-.pr{display:flex;align-items:center;gap:6px;font-size:1.3rem}.pr small{font-size:.75rem;font-weight:400}
-.px{margin-left:auto;width:30px;height:30px;border-radius:8px;background:rgba(47,191,150,.18);border:1px solid #2fbf96;color:#2fbf96;display:grid;place-items:center;font-size:.9rem}
-.vista{color:var(--m)}
-.buy{display:flex;gap:8px;align-items:center;justify-content:center;text-transform:uppercase;letter-spacing:.02em;border-radius:12px;padding:12px}
+const ENV = process.env;
+const PORT = +ENV.PORT || 3000;
+const MP_TOKEN = (ENV.MERCADO_PAGO_ACCESS_TOKEN || '').trim();
+const MP_API = (ENV.MERCADO_PAGO_API_URL || 'https://api.mercadopago.com').replace(/\/+$/, '');
+const ADMIN_PW = (ENV.ADMIN_PASSWORD || 'GK').trim().toLowerCase();
+const PUBLIC_URL = (ENV.PUBLIC_URL || ENV.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
+const WH_SECRET = (ENV.MERCADO_PAGO_WEBHOOK_SECRET || '').trim();
+// Por padrão, um pedido Pix permanece aberto por 24 horas. Pode ser reduzido
+// no Render com PIX_EXPIRE_MIN, sem permitir menos de 30 minutos.
+const EXPIRE_MIN = Math.max(30, Number.isFinite(+ENV.PIX_EXPIRE_MIN) && +ENV.PIX_EXPIRE_MIN > 0 ? +ENV.PIX_EXPIRE_MIN : 1440);
+const MANUAL_HOLD_MIN = Math.max(EXPIRE_MIN, 1440); // reserva manual também expira em 24h
+const DATABASE_URL = ENV.DATABASE_URL || '';
+const DATA_FILE = ENV.DATA_FILE || path.join(__dirname, 'data', 'db.json');
+const CORS = (ENV.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+const GOOGLE_CLIENT_ID = (ENV.GOOGLE_CLIENT_ID || '').trim();
+const GOOGLE_CLIENT_SECRET = (ENV.GOOGLE_CLIENT_SECRET || '').trim();
+const DISCORD_CLIENT_ID = (ENV.DISCORD_CLIENT_ID || '').trim();
+const DISCORD_CLIENT_SECRET = (ENV.DISCORD_CLIENT_SECRET || '').trim();
+const OAUTH_REDIRECT_BASE = (ENV.OAUTH_REDIRECT_BASE || PUBLIC_URL).replace(/\/+$/, '');
 
-#shh{touch-action:none;cursor:grab;padding:4px 0 2px;position:sticky;top:-14px;background:var(--s);margin-top:-4px}
-.shc{transition:transform .2s}.shc.drag{transition:none}
-@keyframes up{from{transform:translateY(100%)}}#sh.o .shc{animation:up .22s ease-out}
-@media (prefers-reduced-motion:reduce){#sh.o .shc{animation:none}}
-.th{aspect-ratio:16/9}
-.pp{background:var(--s);border:1px solid var(--l);border-radius:26px;padding:16px;margin-bottom:16px}
-.pimg{aspect-ratio:16/9;border-radius:18px;background:linear-gradient(135deg,var(--a),#1c2233) center/cover no-repeat;display:grid;place-items:center;color:#fff;font-weight:800;margin-bottom:16px;text-align:center;padding:10px}
-.ptt{text-transform:uppercase;font-size:1.5rem;line-height:1.2}
-.badges{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-.bdg{background:var(--s2);border-radius:8px;padding:4px 12px;font-size:.95rem}.bdg.hi{background:var(--a);color:#fff}
-.big{font-size:2rem;font-weight:800;line-height:1.15}.big small{font-size:1rem;font-weight:400;color:var(--m)}
-.buybox{border:1px solid var(--l);border-radius:18px;padding:14px;margin-top:16px}.buybox .b{width:100%;margin:0}.buybox .b+.b{margin-top:8px}
-.box.info{margin-top:14px}.box.info p{color:var(--m);margin-top:6px}.sec2{margin-top:16px}
+/* ------------------------------ utilitários ------------------------------ */
+const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+const num = (v, d = 0) => (Number.isFinite(+v) ? +v : d);
+const round2 = v => Math.round((+v + Number.EPSILON) * 100) / 100;
+const rid = n => crypto.randomBytes(n).toString('base64url');
+const IMG_RE = /^(https:\/\/[^\s"'()<>\\]{4,2000}|data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,[A-Za-z0-9+\/=]+)$/;
+const img = v => { v = String(v == null ? '' : v).trim(); return v.length <= 3e6 && IMG_RE.test(v) ? v : ''; };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const now = () => Date.now();
+const log = (...a) => console.log(new Date().toISOString(), ...a);
 
-:root{--s:rgba(26,30,46,.55);--s2:rgba(255,255,255,.07)}
-:root[data-theme=light]{--s:rgba(255,255,255,.7);--s2:rgba(0,0,0,.05)}
-body{background-color:var(--bg);background-image:radial-gradient(900px 520px at 92% -6%,color-mix(in srgb,var(--a) 30%,transparent),transparent 65%),radial-gradient(760px 560px at -8% 24%,color-mix(in srgb,var(--a) 16%,transparent),transparent 65%);background-attachment:fixed}
-header{background:color-mix(in srgb,var(--bg) 55%,transparent)}
-header,.card,.box,.pp,.stat,details,.cbar,.cc span,.ib,.pc{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-#dr,.shc{background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
-#shh{background:transparent}
-.cbar option,.tools select option,.fld select option{background:#161b24;color:#eef1f6}
-.card,.box,.pp,.stat,details{box-shadow:0 8px 30px rgba(0,0,0,.18)}
-.card{transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-3px)}
-#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
-@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
-
-.w{padding:0 16px}
-header .w{height:76px;gap:12px}
-.ib{width:38px;height:38px;border-radius:12px}.ib svg{width:18px;height:18px}
-#cc{top:-6px;right:-6px;min-width:17px;line-height:17px;font-size:.65rem;padding:0 4px}
-#lgi{width:42px;height:42px}.vf{color:var(--a);flex:none}
-.pp{border-radius:20px;padding:16px;margin:16px 0}
-.pimg{border-radius:12px;margin-bottom:16px}
-.ptt{font-size:1.1rem;font-weight:700;letter-spacing:.01em;margin:0 0 8px;line-height:1.25}
-.badges{margin:8px 0 0;gap:8px}.bdg{font-size:12px;padding:3px 10px;border-radius:6px}
-.old{font-size:14px;margin-top:12px}.old s{font-size:14px}.off{font-size:12px;border-radius:6px}
-.big{font-size:1.4rem;font-weight:700;margin-top:4px}.big small{font-size:.8rem}
-.vista{font-size:12px;display:block}
-.buybox{padding:12px;border-radius:16px;margin-top:20px}
-.buybox .buy{padding:0;height:40px;border-radius:20px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase;letter-spacing:.02em;width:100%}
-.buybox .buy svg{width:18px;height:18px}
-.box.sec2,.box.info{padding:16px;border-radius:16px}.box.info{margin-top:12px}.sec2{margin-top:0}
-.dh{font-size:1.1rem;text-transform:uppercase;margin:0 0 10px}
-.md p,.md li{font-size:14px;line-height:1.6;color:var(--t)}.md ul{padding-left:22px;margin:8px 0}.md h3{font-size:1.05rem;margin:4px 0}.md b{font-weight:700}
-.ih{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500}.box.info p{font-size:14px;margin-top:10px}
-.pxb{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:rgba(0,0,0,.4);color:#2fbf96;font-size:1.2rem;margin-top:12px}
-.sh2{font-size:1.1rem;text-transform:uppercase;margin:32px 0 12px}
-.ib{width:36px;height:36px;border-radius:11px}.ib svg{width:17px;height:17px}
-.mrow{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}.mrow details{flex:1;min-width:0;margin-bottom:0!important}.mvb{display:flex;flex-direction:column;gap:6px}.mvb .b{padding:10px 14px;font-size:1rem}
-
-#lgi{object-fit:contain;border-radius:0;width:46px;height:46px;background:transparent!important;box-shadow:none!important;mix-blend-mode:normal}
-.flogo{display:block;width:var(--logo-bottom,72px);height:var(--logo-bottom,72px);object-fit:contain;background:transparent!important;margin-bottom:10px}.logo img#lgi{width:var(--logo-top,46px);height:var(--logo-top,46px)}.avatar-img{object-fit:cover!important;background:var(--s2)!important}.profile-pop{position:fixed;right:18px;top:70px;width:min(320px,calc(100vw - 28px));padding:16px;background:color-mix(in srgb,var(--bg) 94%,#000);border:1px solid var(--l);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45);z-index:30;display:none}.profile-pop.o{display:block}.profile-user{display:flex;gap:12px;align-items:center}.profile-user .av{width:48px;height:48px;flex:none;border-radius:14px}.profile-user b{display:block;font-size:1rem}.profile-user small{display:block;color:var(--m);margin-top:3px;overflow:hidden;text-overflow:ellipsis}.profile-pop hr{border:0;border-top:1px solid var(--l);margin:14px 0}.profile-action{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:0;background:transparent;color:var(--t);padding:12px;border-radius:12px;font-weight:700}.profile-action:hover{background:var(--s2)}.profile-action.danger{color:#ff6b7e}.oauth{width:100%;height:48px;border-radius:14px;border:1px solid var(--l);display:flex;align-items:center;justify-content:center;gap:10px;color:var(--t);font-weight:700;margin-top:9px}.oauth.google{background:#fff;color:#202124;border-color:#fff}.oauth.discord{background:#5865f2;border-color:#5865f2;color:#fff}.oauth:disabled{opacity:.5;cursor:not-allowed}.login-or{display:flex;align-items:center;gap:10px;color:var(--m);font-size:.85rem;margin:18px 0}.login-or:before,.login-or:after{content:"";height:1px;background:var(--l);flex:1}
-header #sb{display:none;height:auto;padding-bottom:12px;gap:0}header #sb.open{display:block}
-.sbox{display:flex;align-items:center;gap:10px;border:2px solid var(--a);border-radius:18px;padding:0 14px;height:48px;background:rgba(255,255,255,.05)}
-.sbox input{flex:1;background:transparent;border:0;color:var(--t);font-size:15px;outline:0;height:100%;min-width:0}
-#sres{display:none;position:absolute;left:16px;right:16px;top:calc(100% + 6px);max-height:62vh;overflow:auto;background:color-mix(in srgb,var(--bg) 95%,transparent);border:1px solid var(--l);border-radius:16px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 20px 40px rgba(0,0,0,.4)}
-.sri{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--l)}.sri:last-child{border-bottom:0}
-.srt{width:62px;height:62px;border-radius:10px;background:linear-gradient(135deg,var(--a),#1c2233) center/cover;flex:none}
-.srm b{display:block;text-transform:uppercase;font-size:15px;line-height:1.25}
-.pc2{display:inline-block;border:1px solid var(--a);border-radius:99px;padding:1px 10px;font-size:13px;margin-top:6px;text-transform:uppercase}
-.srn{padding:16px;font-size:15px}
-.hs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;cursor:grab}
-.hs::-webkit-scrollbar{display:none}.hs>*{flex:0 0 auto;scroll-snap-align:start}
-.hsp .card{width:230px}
-.rc{width:min(78vw,300px);background:var(--s);border:1px solid var(--l);border-radius:18px;padding:16px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.rc .rt{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.st2{color:#f5b301;letter-spacing:2px;font-size:.95rem}
-.rc p{color:var(--m);font-size:14px;line-height:1.55;margin-top:10px;white-space:pre-wrap}
-.stars button{background:none;font-size:30px;line-height:1;color:#3a3f55;padding:0 3px}.stars button.on{color:#f5b301}
-.rrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.seg{display:flex;gap:8px}
-
-.ct{font-size:1.5rem;text-transform:uppercase;margin:22px 0 4px}.bc{color:var(--m);margin:0 0 14px;font-size:.95rem}.bc b{color:var(--t)}
-.pn{background:var(--s);border:1px solid var(--l);border-radius:20px;margin:14px 0;overflow:hidden;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.ph{margin:0;padding:18px 16px;border-bottom:1px solid var(--l);font-size:1.05rem;text-transform:uppercase}.phr{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--l);padding-right:12px;gap:8px}.phr .ph{border:0}.pnb{padding:16px}
-.pay{display:flex;gap:12px;align-items:center;border:2px solid var(--a);border-radius:16px;padding:12px}.pxl{width:44px;height:44px;border-radius:12px;background:rgba(0,0,0,.45);color:#2fbf96;display:grid;place-items:center;font-size:1.3rem;flex:none}.fast{display:inline-block;border:1px solid #2fbf96;color:#2fbf96;border-radius:99px;padding:0 8px;font-size:.78rem;margin-left:6px}.pay small{color:var(--m)}
-.pi{display:block;width:100%;height:48px;padding:0 16px;border-radius:16px;border:1px solid var(--l);background:color-mix(in srgb,var(--bg) 75%,#000);color:var(--t);margin-bottom:10px;font-size:15px}
-.dcb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:48px;border-radius:16px;background:#5865f2;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:12px;border:0}
-.tm{display:flex;gap:10px;align-items:center;margin:14px 2px;color:var(--m)}.tm a{color:var(--t)}.tm input{width:22px;height:22px;flex:none}
-.pagar{width:100%;height:56px;font-size:1.1rem;font-weight:800;border-radius:20px;margin:0 0 6px;letter-spacing:.02em}
-.seg2{border:1px solid #2fbf96;color:#2fbf96;border-radius:99px;padding:4px 10px;font-size:.85rem;white-space:nowrap}
-.ci{display:flex;gap:12px;align-items:center}.cit{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--a),#1c2233) center/cover;flex:none;position:relative}.cin b{display:block;text-transform:uppercase;font-size:15px;word-break:break-word}.cin small{color:var(--m);font-size:14px}
-.cq{display:flex;align-items:center;gap:8px;margin:12px 0}.rb{width:40px;height:40px;border-radius:99px;border:1px solid var(--l);background:rgba(255,255,255,.05);color:var(--t);font-size:1.1rem;flex:none}.rb.rx{background:rgba(240,85,106,.15);border-color:rgba(240,85,106,.5);color:#f0556a}
-.qn{min-width:56px;height:40px;border-radius:99px;background:rgba(0,0,0,.4);display:grid;place-items:center;font-weight:600}.ctot{margin-left:auto;font-size:1.05rem}
-.cup{display:flex;gap:8px;border-top:1px solid var(--l);border-bottom:1px solid var(--l);padding:14px 0;margin-top:6px}.cup .pi{margin:0;flex:1;min-width:0}.cup .b{display:flex;align-items:center;gap:6px;border-radius:16px;height:48px;padding:0 16px;font-weight:700}
-.sumb{margin-top:14px;border:1px solid var(--l);border-radius:14px;padding:12px 16px}.sumb div{display:flex;justify-content:space-between;padding:5px 0}.sumb .tt{font-size:1.05rem}
-.pixk{background:rgba(0,0,0,.35);border:1px dashed var(--l);border-radius:14px;padding:12px}.pixk small{display:block;color:var(--m)}.pixk b{font-size:1.3rem;word-break:break-all;user-select:all}
-.steps{padding-left:20px;color:var(--m);line-height:1.7;margin-bottom:12px}.steps b{color:var(--t)}
-.wide{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:46px;border-radius:99px;text-transform:uppercase;font-weight:700;margin-top:10px}
-.hr{border:0;border-top:1px solid var(--l);margin:16px 0}.rowl{display:flex;align-items:center;gap:10px;justify-content:center;text-transform:uppercase;color:var(--m);font-weight:600}
-.av{width:100%;height:100%;border-radius:inherit;background:linear-gradient(135deg,var(--a),#3b2a8f);display:grid;place-items:center;font-weight:800;color:#fff;text-transform:uppercase}.pt0{margin:12px 0 2px;text-transform:uppercase}
-.oh{display:flex;gap:12px;align-items:flex-start}.dot{width:14px;height:14px;border-radius:50%;margin-top:6px;flex:none}.dot.pend{background:#ff9f43}.dot.ok{background:#22c55e}.dot.no{background:#f0556a}
-.ot{flex:1;min-width:0}.ot b{display:block;font-size:1.05rem}.ot small,.op2 small{color:var(--m);display:block}.op2{text-align:right}.op2 b{font-size:1.15rem;display:block}
-.ochips{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--m);margin:14px 0 4px}.ochips span{display:inline-flex;gap:6px;align-items:center}.ochips b{color:var(--t)}.cpn{font-style:normal;background:rgba(124,92,255,.18);color:var(--a);border-radius:6px;padding:0 8px}
-.sh3{font-size:1.05rem;text-transform:uppercase;margin:26px 0 12px}.pit{display:flex;gap:12px;align-items:center}.big2{width:62px;height:62px}
-.qb{position:absolute;top:-8px;right:-8px;background:var(--a);color:#fff;font-style:normal;font-size:.8rem;border-radius:99px;min-width:22px;height:22px;display:grid;place-items:center;padding:0 5px}
-.rsg{display:none;margin-top:12px;background:rgba(0,0,0,.35);border:1px dashed var(--l);border-radius:12px;padding:12px;white-space:pre-wrap;word-break:break-all;user-select:all}
-.stl{font-weight:800;text-transform:uppercase;font-size:1.05rem;margin-bottom:4px}.stl.ok{color:#22c55e}.stl.pend{color:#ff9f43}.stl.no{color:#f0556a}
-.dash{border:0;border-top:1px dashed var(--l);margin:16px 0}.lb{display:block;margin:0 0 6px;font-size:1rem}.pgc{display:flex;justify-content:space-between;gap:12px}.pgc small{display:block;color:var(--m)}.pgc b{font-size:1.1rem}
-
-.qrb{display:inline-block;background:#fff;padding:12px;border-radius:16px;min-width:244px;min-height:244px;line-height:0}.qrb img,.qrb canvas{display:block;margin:auto}.qrb #qr{line-height:1.4;color:#000;font-size:.85rem}
-#rg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:16;display:none;align-items:flex-end}#rg.o{display:flex}
-.rgc{width:100%;max-height:82vh;overflow:auto;background:color-mix(in srgb,var(--bg) 96%,#000);border-radius:20px 20px 0 0;border-top:1px solid var(--l);padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
-.rgh{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--l);text-transform:uppercase;gap:10px}.rgh button{background:none;color:var(--t);font-size:1.4rem}
-#rgb{padding:16px}.kr{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--l);border-radius:16px;padding:14px 16px;margin-bottom:12px;word-break:break-all}.kr b{font-weight:600}.kr button{background:none;color:var(--t);flex:none}
-.kt{border:1px solid var(--l);border-radius:16px;padding:16px;white-space:pre-wrap;word-break:break-word;line-height:1.7}.kt a{color:#4aa3ff;text-decoration:underline}
-.apb{border:1px dashed var(--a);border-radius:14px;padding:12px;margin-top:12px}
-.download-page{max-width:620px;margin:34px auto 60px;text-align:center}.download-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}.download-brand img{width:94px;height:94px;border-radius:50%;object-fit:contain;border:2px solid var(--a);box-shadow:0 0 0 5px rgba(124,92,255,.12),0 0 28px rgba(124,92,255,.55);background:var(--s2);padding:8px}.download-brand .fallback{width:94px;height:94px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--a);box-shadow:0 0 28px rgba(124,92,255,.55);font-size:2rem;font-weight:900;background:var(--s2)}.download-brand h1{font-size:1.35rem;letter-spacing:.08em;margin:14px 0 6px}.download-brand p{color:var(--m);margin:0}.download-list{display:grid;gap:12px;text-align:left}.download-card,.social-card{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--l);border-radius:17px;background:linear-gradient(135deg,var(--s2),color-mix(in srgb,var(--s2) 72%,var(--a)));color:var(--t);text-decoration:none;transition:transform .2s,border-color .2s}.download-card:hover,.social-card:hover{transform:translateY(-2px);border-color:var(--a)}.download-icon{width:42px;height:42px;flex:none;border-radius:13px;display:grid;place-items:center;background:var(--a);color:#fff;font-size:1.3rem}.download-card strong,.social-card strong{display:block}.download-card small,.social-card small{display:block;color:var(--m);margin-top:4px;line-height:1.35}.download-arrow{margin-left:auto;color:var(--a);font-size:1.5rem}.download-socials{display:grid;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--l)}.social-card{padding:13px 16px;background:var(--s)}.social-card .download-icon{width:36px;height:36px;border-radius:11px;font-size:1.05rem}.download-empty{border:1px dashed var(--l);padding:18px;border-radius:16px;color:var(--m);text-align:center}.pix-drip{max-width:560px;margin:30px auto 54px;text-align:center}.pix-drip h1{font-size:1.65rem;letter-spacing:.08em;margin-bottom:8px}.pix-drip-sub{color:var(--m);margin-bottom:7px}.pix-receiver{font-weight:700;margin-bottom:18px}.pix-qr-frame{background:linear-gradient(145deg,#151522,#0b0b12);border:1px solid var(--l);border-radius:22px;padding:18px;display:inline-block;box-shadow:0 12px 32px rgba(0,0,0,.28)}.pix-qr-frame img{display:block;width:260px;height:260px;object-fit:contain;background:#fff;border-radius:12px;padding:10px}.pix-copy-label{color:var(--m);font-size:.9rem;margin:20px 0 8px}.pix-copy-row{display:flex;align-items:center;gap:10px;text-align:left;background:var(--s2);border:1px solid var(--l);border-radius:14px;padding:13px 14px;cursor:pointer}.pix-copy-row code{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--t);font-size:.78rem}.pix-copy-btn{flex:none;background:var(--a);color:#fff;border-radius:10px;padding:99px 11px;font-weight:800}.pix-how{margin-top:26px;text-align:left}.pix-how h2{font-size:1rem;letter-spacing:.08em;text-align:center;margin-bottom:12px}.pix-how-grid{display:grid;gap:10px}.pix-how-item{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--l);border-radius:14px;padding:13px;background:var(--s)}.pix-how-item b{display:block}.pix-how-item p{margin:4px 0 0;color:var(--m);font-size:.86rem}.pix-how-icon{font-size:1.35rem;line-height:1.2}</style></head><body>
-<canvas id="fx" aria-hidden="true"></canvas>
-<div class="bar">Entrega imediata após a confirmação do pagamento · Suporte todos os dias</div>
-<header><div class="w"><a class="logo" href="#/"><img id="lgi" alt="" style="display:none"><span class="ln"></span><svg id="vf" class="vf" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"></circle><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><nav class="nav"><a href="#/">Início</a><a href="#/categoria/todos">Produtos</a><a href="#/faq">Dúvidas</a><a href="#/suporte">Suporte</a><a href="#/download">Downloads</a></nav><span class="sp"></span><button class="ib" id="sr" aria-label="Pesquisar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button><a class="ib" id="lg" href="#/entrar" aria-label="Entrar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"></path></svg></a><button class="ib cart" id="oc" aria-label="Carrinho"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 10.5h9.6L19.5 7H6.5"></path><circle cx="9" cy="19" r="1.6"></circle><circle cx="17" cy="19" r="1.6"></circle></svg><span id="cc">0</span></button></div><div id="sb" class="w"><div class="sbox"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input id="sq" type="search" placeholder="Buscar produtos" autocomplete="off" aria-label="Buscar produtos"></div><div id="sres"></div></div></header><div id="profilePop" class="profile-pop" role="dialog" aria-label="Menu do perfil"><div class="profile-user"><img id="profileAv" class="av avatar-img" alt="Avatar"><div><b id="profileName">Usuário</b><small id="profileEmail"></small></div></div><hr><button class="profile-action" id="profileOrders">Meus pedidos</button><button class="profile-action danger" id="profileLogout">Sair da conta</button></div><main class="w" id="app"></main>
-<footer><div class="w">
-<div><img id="flogo" class="flogo" alt="Logo DH4X STORE"><b style="color:var(--t)" class="ln"></b><p>Produtos digitais com entrega imediata e suporte eficiente.</p><p style="margin-top:8px">© 2026 <span class="ln"></span>. Todos os direitos reservados.</p></div>
-<div><b style="color:var(--t)">Loja</b><a href="#/categoria/todos">Todos os produtos</a><a href="#/conta">Meus pedidos</a><a href="#/faq">Perguntas frequentes</a></div>
-<div><b style="color:var(--t)">Legal</b><a href="#/termos">Termos e condições</a><a href="#/privacidade">Privacidade</a><a href="#/suporte">Fale conosco</a></div>
-</div></footer>
-<aside id="dr" aria-label="Carrinho"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Carrinho</h2><button class="b g sm" id="xc">Fechar</button></div>
-<div id="its"></div><div class="tot"><span>Valor total:</span><span id="tt">R$ 0,00</span></div>
-<a class="b" href="#/checkout" id="go">Ir para a compra</a></aside>
-<div id="sh" role="dialog" aria-modal="true"><div class="shc"><div id="shh"><div class="grab"></div><h3 id="sht" style="margin-bottom:2px"></h3><p id="shn" style="color:var(--m);margin-bottom:10px"></p></div><div id="shl"></div></div></div>
-<div id="rg" role="dialog" aria-modal="true"><div class="rgc"><div class="rgh"><b id="rgt"></b><button id="rgx" aria-label="Fechar">✕</button></div><div id="rgb"></div></div></div>
-<div id="toast" role="status"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script id="dbd" type="application/json">{"h":"8d4970b9740282b959e5cf29f0ea8016cc93acb82fdf4846833fc37bf4fca1f8","loja":{"nome":"DH4X STORE","aviso":"","heroT":"MELHOR LOJA DE XIT DO CENÁRIO","heroP":"Produtos digitais com entrega imediata","heroImg":"/_blob/3b22d3f0364f4ca6cbf7dc5aa03e0725","discord":"https://discord.gg/SHkAnAWNVd","whats":"https://wa.me/15089658290?s=t","email":"gknovodcdc@gmail.com","pix":"gknovodcdc@gmail.com","pixInfo":"Pague o valor exato e envie o comprovante pelo WhatsApp.","cor":"","fx":"petalas","fxq":"baixa","logo":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYgAAAJICAYAAAB7Q3MPAAEAAElEQVR42uz9eZwd1Xkn/n+ec05V3b1vb2q1doQkFrELzGIDkmMbg/FuSHCczOQ7ycT5Jpkkk8nkO3ZsIM46M9n3ZOLEdhLHInjFLMYgYXaQjGQkEFpaUu973/1W1Vme3x91BTjx5DdLnNjkvHnpJSQaqbv63jp1nu0Anud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5nud5/8v27GF15t9372bJt7P4xz6emYmZyV85z/O8f4Wm9k0VXr0Y8B5Wu3ezJPLrgucBgPKXwHutOrMDePKuJ3O50bX/frS84X9Mmf2p6o68PQzlptLw6NK+ffv+hoh0738xL/+/DR56/uC4vfCrG+q4AwwCCMT+qnr/mgh/CbzX2qKwZw8rZqb9+6GIiHOrh0qSxG/f/dhddPnll2vH9k863XiibyN94vLLL9c8xyVmHmlM848unOzuPPTk9P2Hj8w/nji3967tT0ZExGBg9+7d8uXdhg8/ef8K+Be595r2+c9/vvyud72r+fxj418t5opc77a+KgkPmTT98dWr155UQZAXgn44Cimfpsinxh5Ok/TC6fnJH6jkK4+WyoXGhgv7LBE1/sFidDsLupOcv8qeXyA87zt850BEfGj3odCsKv4Em/QzloL/p9JX/fGA3K6BgepVlXXy4505oBvrWiEXVFfmgW6SotlqwVoLbRIuFHI0OjpgIR0JiRqBRLEs0ailTx89fvQ3i/nSM1UAzx5+1tz6E7e2/JX3/ALhed/5C4S4775jwVAk7x4ZGn3b3OJsc6A6VF6p1ZI1w9VLKqXyb0R53NBtOyOkiIx2buxY3XY6HSKhpIMDOwMlibduXSOEElBR9gZRIVCrdXB6YhwqCBpCBK5cKdpmt/kjl1971ueYWRKR9d8F77XGJ6m918ruwT1x/6EiOP/WhcUFQ5DllZVlk+pYSTX8dBSg0qoBICHTFAwWwjkrCArECsQOsARiIh0ziBhp7FgoQo4FavWWM5plGIYVIQipMVZYxABw1113+W+C95rkk9Ted+2i8KpkMTGYJhvb6865OgjKWuOsMwrEEhCVRhvOsYO1Fs4xWQtYo2GNg7MMdgA7AasBEwM2JZjYUZowWQtiJmmZkdrUaWetsy51xswxs7xi+Ipg3z4OeDdLn8D2/A7C8/7ldwyvLjllAHi88sKNYVgqJmnq2IHAgNUSWjsOQghrqfehDdiC0QJWJ3DSwjkBtgtWjKQLBAEgpARJly0e1gDOgq0V2rEp5ov5jsNvE9F1AL5leIn3cYAdMH/vc/U8v0B43rcLEfHnP/9YeXWoCAMDwDIwOrK2VGstfMY5RBLSgYiYHRiA7lqKUwN2lCUVOCs8IsOADgFHIGawYcBYdOspgnIIGQmYLpCSA+kQEhFgBYiEaq40QUJce/JA7dcCpdqDw5Fs1M0Tx1449eTrd54b7H0ODbo8669gZoW7wHSrz1N432XvNX8JvO+mnQMA7L//xdWGxD4pg1JiUpADtDG0aeOGUqlQJGsJsIBzgLPAyaOLSNsMISQAwDkGscC6NVUoIjAABwI5IO04LM4myOUkrDWwgmEowfC6Ikr9ISw7CAlIQWB23O4m5JgRhAFq9RqsNbX+wXJz1WjfX0uBuNHA7687n5b8d8/7buRzEN53zeJARLx0DGVVKOyTMr/GOVkJKF8hhBWJsAwniJwEDAFWAE6AHAFawqUKLo5gugFcHMB2ARsDMhUQqYNyDiERR4AODLtyIJFDBIqzH9wlUCJAqYK0CsJKkJE0P1vT87M1PTW5pDsth85StdVorXMaP1eu4I5C3r1ol/iXa+N8AzNLALj9m+dA/Ys9pJ1pKGRmfx/w/ALhfVeTzCwGizDWcZ8xjo1mlyaWrWHW2jI5AhvAGYAt4FIHlxKcZTjL2a7CMtgarAVMF+AYUJYQWudKAWjTehmsXVsQa4bBw/0O5CxgDExskSYMnaQwXQvTZZgUgBMBWARCUSCYKE00wwliCzk/bbRiMSwYH+rrw/0rp/DL+764r3DnneT27ePg5J6TOWRJkX+RRWLXLjJExETkfGLd8wuE9123a9i3b1/Q6zMwRORm03gVIOCcI2YiJyQ5CCImctbBGYYzQKoBYwBnGNoKaCNhXQrnGOwUYB2cZjAD+ZDt6FAgwpJpNqA/MnS23VceVpRnqSMiCKdgE4JOCGkK6C5gY4LRBOMctE1hnIVxFrBEJiWYxAKGgzSxvDjvkqQBa3S6qyPDD379obGLc4sT5SVrPvhcnpPV3bt3/3O/D+nknpO5Q0/P/H+8yJXDz8x+4Nj++Y9lY0r2+Lyk9zL/YvC+Y/WqfzQAtKb4LRAICPi5SeMSdig668AswAyYlMFGAiEBDiAHgAiGLETqIBILEwg4R3BECJgQgiFSkwysVVHdxvf1XZZ7HxF1mPlu9w082leRg6Ulx+02w3WJRApoImiZ3c8lANYMxwwQQQgCw0GnDGssSDg44UiqgKISpLLyUy9OPvknl1zytsplV65b3vfIqS9//vr/aNyJO92+P9kXAAB2AGNjY+7WW2/9tiW0d+/eLTbt3JQefnJqZnK6eXJkcNXAcm156fDe+V/buXNn+1tUiXn/Wt+D/hJ435G7h9tZTN3U6A+q+X8P5pK1tEoqcVmugPOOvjAjklhHRJTtCIyF1RYbRtcjVDkYQ2DnoNnAMrBwooW04wBJIISQghA4y/1Bns/fHolu0T5Y2KHewsf4rSf2rXxqeX7lN6/4D5v/QD+f/gXVw/ecOtRF18HmhnJSWwOWDCcBISTmagtw0CBSIAk4NohCifWbhgFYICAIIlftV2Jppf3luaUZyUK4a9609eYnHnzpiQ2bhm5dHJtYvuSGS9p/f/f07bpJv/rPPvzE1MTqkdWVmYW539h+5ejH9u7dK3ft2mX8K9DzC4T3nRhWEr2YeOHA3lPHi4XBUWYgjlMkcYxuO8W69WsQKdWrUmKAAWEFTh1bQafBIAhYy9luwWisHelHQRCICKQYgXO2SKFspimPnB/8Uvl18qMnvzh/o1wsf3n6UIuWTkr0X8BfvPoX3QcwO3SFmbCfw6ys7Nvf1R3IwPg2DAGsGBvPryCICNm2BQAJxN0EM9NLCMM8IByUYlinsfmcVRhZG8Iw0Oo236NI/Ui5mr/24IEjHcf05yJQ3Wq1Xy4uzT1+7VvPf/DMtfgnvr4SgCMi3r17tzx/+Py8DEaoffh0fPnPXq79K9DzISbvO3VxUERkmFl2Ouhnp/rmZxaNAznnWDjHwmonbOIAkmBtwU5kfW9WwCYSJrGg3v1aOAkbA047cMhAGoC6VudLYVAetY1yXtxceJ189PnPn/7FxafxoU6HaUW37VefPsyXTF72DtsMTm25ofXeNW8v97Ue6t571WX5G587YF3d5kk4Q1ISEAsYQ1kvNzNIAjASSAMwFIQE4DSIJVq12BZKIUAQubD8WUFAqw5ImStViuX/IoSEgEKxWLHPPnjsTQAe2b17t/ynDDebdmbmVy0oT318qS86A/5m2ZefreX/l4L/9A74U/P3o2v3/jU4fEcf5vI3EPl+2fO8/w3p3m33M3Mv3SvhM+d9e+y+f1j2j8y/f4x9123o/2/b9d3mU//r9q8z+Yebf+f2X94aP/3y3+O43e62f/fO/+P4Lp+G+9m6d4p77d7T3u5M4L+4+kG3/+H+P//m73yD//o/eufx4P1f11X+/Rvf8L/iN3q9L9fA1y423q9+3X3e7e233n2+4323X3e7e2333P3//9/u9r54A/fU9u95s35/7e45e++s5r60vvD30/7t69v8dO7f3b+/+fO7v2b59+/7t//P+fPfP/jP35/f/z//792+fv8v7/2/f3/7v37/v//f/+/f3/4f3/vv//v3t/f339//f3/9/f33/f3/9/f3//f3/9//f3/9//f3/+f3/+f3/9/f33/f3/9//f3//f3/9//f0=-------------------------------------------------------------------------"},"prods":[{"id":"xit-mod-menu-vip-ff-s24","cat":"desconhecida","tag":"RECOMENDADO","tagC":"","cbar":"Apenas para celulares com processador Snapdragon. Funciona em Samsung S24, Note 14 e vários outros.","nome":"XIT MOD MENU VIP FF S24 & ALL SNAPDRAGON","desc":"O melhor auxílio de mira e sensibilidade otimizada para o Free Fire. Totalmente seguro, antiban e com atualização automática constante.\n\n- Aimbot 100% Preciso\n- Zé Gotinha / HS Neck e Head\n- Bypassed e Anti-blackd\n- Suporte total via Discord e WhatsApp","velho":99.90,"pr":49.90,"off":50,"vista":"no pix ou cartão","m":1,"q":50,"f":["Aimbot Automático de Precisão","Otimização de DPI e Sensibilidade sem lag","Compatível com Android 13/14/15 e Shizuku","Atualizações diárias inclusas"],"desc2":"Incluso chave de acesso VIP válida por 30 dias + tutorial completo de instalação em vídeo no Discord.","form":[{"n":"id_player","l":"Seu ID do Free Fire","t":"text","p":"Ex: 123456789","r":true},{"n":"discord_user","l":"Seu Usuário do Discord","t":"text","p":"Ex: dh4x_oficial","r":true}],"pix":"gknovodcdc@gmail.com","pixInfo":"Pague R$ 49,90 via Pix. Envie o comprovante e seu ID para o nosso WhatsApp ou abra ticket no Discord para liberação instantânea.","ent":"O seu código de licença e link de download serão disponibilizados imediatamente na aba 'Meus Pedidos' e na página de Downloads após a aprovação."}]}
-</script>
-<script>
-(function(){
-  let db = {};
-  try {
-    db = JSON.parse(document.getElementById('dbd').textContent);
-  } catch(e){}
-
-  let cart = [];
-  try {
-    cart = JSON.parse(localStorage.getItem('dh4x_cart') || '[]');
-  } catch(e){}
-
-  function saveCart(){
-    try { localStorage.setItem('dh4x_cart', JSON.stringify(cart)); } catch(e){}
-    updateCartCount();
-  }
-
-  function updateCartCount(){
-    const cc = document.getElementById('cc');
-    if(cc){
-      const total = cart.reduce((acc, item) => acc + (item.q || 1), 0);
-      cc.textContent = total;
+/* ------------------------------ armazenamento ----------------------------- */
+function fileStore() {
+  return {
+    async load() {
+      try { return JSON.parse(await fs.promises.readFile(DATA_FILE, 'utf8')); }
+      catch (e) { if (e.code === 'ENOENT') return null; throw e; }
+    },
+    async save(parts) {
+      await fs.promises.mkdir(path.dirname(DATA_FILE), { recursive: true });
+      const tmp = DATA_FILE + '.tmp';
+      await fs.promises.writeFile(tmp, JSON.stringify(parts));
+      await fs.promises.rename(tmp, DATA_FILE);
     }
-  }
-
-  function showToast(msg){
-    const t = document.getElementById('toast');
-    if(!t) return;
-    t.textContent = msg;
-    t.style.display = 'block';
-    setTimeout(()=>{ t.style.display = 'none'; }, 3000);
-  }
-
-  function renderStore(){
-    const app = document.getElementById('app');
-    if(!app) return;
-    const store = db.loja || {};
-    const prods = db.prods || [];
-
-    document.querySelectorAll('.ln').forEach(el => el.textContent = store.nome || 'DH4X STORE');
-    
-    let route = location.hash || '#/';
-    
-    if(route === '#/' || route.startsWith('#/categoria/')){
-      let html = `
-        <section class="hero">
-          <h1>${store.heroT || 'BEM VINDO À DH4X STORE'}</h1>
-          <p>${store.heroP || 'Produtos digitais com entrega imediata'}</p>
-          <div>
-            <a href="#/categoria/todos" class="b">Ver Produtos</a>
-            ${store.discord ? `<a href="${store.discord}" target="_blank" class="b g">Nosso Discord</a>` : ''}
-          </div>
-        </section>
-        <div class="stats">
-          <div class="stat"><b>100%</b><span>Seguro & Anti-ban</span></div>
-          <div class="stat"><b>Imediata</b><span>Entrega Automática</span></div>
-          <div class="stat"><b>24/7</b><span>Suporte Especializado</span></div>
-        </div>
-        <h2>Produtos em Destaque</h2>
-        <div class="grid">
-      `;
-
-      prods.forEach(p => {
-        html += `
-          <div class="card">
-            <div class="th" style="background-image:url('${p.img || store.heroImg || ''}')">
-              ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
-            </div>
-            <div class="bd">
-              <span class="pt">${p.nome}</span>
-              <div class="old"><s>R$ ${p.velho ? p.velho.toFixed(2) : ''}</s> <span class="off">-${p.off}%</span></div>
-              <div class="pr">R$ ${p.pr ? p.pr.toFixed(2) : '0.00'} <small class="vista">${p.vista || ''}</small></div>
-              <a href="#/produto/${p.id}" class="b buy" style="margin-top:12px;">Ver Detalhes</a>
-            </div>
-          </div>
-        `;
-      });
-
-      html += `</div>`;
-      app.innerHTML = html;
-    } else if(route.startsWith('#/produto/')){
-      const pid = route.replace('#/produto/', '');
-      const p = prods.find(item => item.id === pid) || prods[0];
-      if(!p){
-        app.innerHTML = '<h2>Produto não encontrado</h2>';
-        return;
+  };
+}
+function pgStore() {
+  const { Pool } = require('pg');
+  const local = /localhost|127\.0\.0\.1/.test(DATABASE_URL);
+  const pool = new Pool({ connectionString: DATABASE_URL, ssl: local ? false : { rejectUnauthorized: false }, max: 4 });
+  return {
+    async load() {
+      await pool.query('CREATE TABLE IF NOT EXISTS kv (k text PRIMARY KEY, v jsonb NOT NULL)');
+      const r = await pool.query('SELECT k, v FROM kv');
+      if (!r.rows.length) return null;
+      const o = {};
+      r.rows.forEach(x => { o[x.k] = x.v; });
+      return o;
+    },
+    async save(parts, which) {
+      for (const k of which) {
+        await pool.query('INSERT INTO kv (k, v) VALUES ($1, $2::jsonb) ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v', [k, JSON.stringify(parts[k])]);
       }
-      
-      let html = `
-        <div class="crumb"><a href="#/">Início</a> / <a href="#/categoria/todos">Produtos</a> / ${p.nome}</div>
-        <div class="pp">
-          <div class="pimg" style="background-image:url('${p.img || store.heroImg || ''}')"></div>
-          <h1 class="ptt">${p.nome}</h1>
-          ${p.cbar ? `<div class="badges"><span class="bdg hi">${p.cbar}</span></div>` : ''}
-          <div class="old"><s>R$ ${p.velho ? p.velho.toFixed(2) : ''}</s> <span class="off">-${p.off}% DESCONTO</span></div>
-          <div class="big">R$ ${p.pr ? p.pr.toFixed(2) : '0.00'} <small class="vista">${p.vista || ''}</small></div>
-          <div class="buybox">
-            <button class="b buy" id="addCartBtn">Adicionar ao Carrinho</button>
-            <button class="b g buy" id="buyNowBtn" style="margin-top:8px;">Comprar Agora</button>
-          </div>
-        </div>
-        <div class="box info">
-          <h3 class="dh">Descrição do Produto</h3>
-          <div class="md"><p style="white-space:pre-line">${p.desc}</p></div>
-          ${p.f && p.f.length ? `
-            <h3 class="dh" style="margin-top:16px;">Recursos e Funcionalidades</h3>
-            <div class="md"><ul>${p.f.map(item => `<li>${item}</li>`).join('')}</ul></div>
-          ` : ''}
-        </div>
-      `;
-      app.innerHTML = html;
-
-      document.getElementById('addCartBtn')?.addEventListener('click', () => {
-        const exist = cart.find(item => item.id === p.id);
-        if(exist){
-          exist.q = (exist.q || 1) + 1;
-        } else {
-          cart.push({ id: p.id, nome: p.nome, pr: p.pr, q: 1 });
-        }
-        saveCart();
-        showToast('Produto adicionado ao carrinho!');
-      });
-
-      document.getElementById('buyNowBtn')?.addEventListener('click', () => {
-        const exist = cart.find(item => item.id === p.id);
-        if(!exist){
-          cart.push({ id: p.id, nome: p.nome, pr: p.pr, q: 1 });
-          saveCart();
-        }
-        location.hash = '#/checkout';
-      });
-    } else if(route === '#/checkout'){
-      let total = cart.reduce((acc, item) => acc + (item.pr * (item.q || 1)), 0);
-      let html = `
-        <h1 class="ct">Finalizar Compra</h1>
-        <div class="bc">Confira os itens do seu pedido e conclua pelo Pix</div>
-        <div class="pn">
-          <div class="ph">Seus Itens</div>
-          <div class="pnb">
-      `;
-
-      if(cart.length === 0){
-        html += `<p style="color:var(--m)">Seu carrinho está vazio.</p>`;
-      } else {
-        cart.forEach(item => {
-          html += `
-            <div class="ci" style="margin-bottom:12px;">
-              <div class="cin">
-                <b>${item.nome}</b>
-                <small>Qtd: ${item.q}x - R$ ${(item.pr * item.q).toFixed(2)}</small>
-              </div>
-            </div>
-          `;
-        });
-        html += `
-          <div class="sumb">
-            <div class="tt"><b>Total:</b> <b>R$ ${total.toFixed(2)}</b></div>
-          </div>
-          <div class="pay" style="margin-top:16px;">
-            <div class="pxl">⚡</div>
-            <div>
-              <b>Pagamento via PIX</b><span class="fast">Aprovação Imediata</span>
-              <small>Chave: ${store.pix || 'gknovodcdc@gmail.com'}</small>
-            </div>
-          </div>
-          <div class="pixk" style="margin-top:14px;">
-            <small>Chave Pix para cópia:</small>
-            <b>${store.pix || 'gknovodcdc@gmail.com'}</b>
-          </div>
-          <p style="margin-top:12px;font-size:0.9rem;color:var(--m);">${store.pixInfo || 'Pague o valor exato e envie o comprovante.'}</p>
-          ${store.whats ? `<a href="${store.whats}" target="_blank" class="b wide" style="margin-top:16px;">Enviar Comprovante WhatsApp</a>` : ''}
-        `;
-      }
-
-      html += `</div></div>`;
-      app.innerHTML = html;
-    } else if(route === '#/faq'){
-      app.innerHTML = `
-        <h1 class="ct">Perguntas Frequentes</h1>
-        <details><summary>Como recebo meu produto?</summary><p>A entrega é imediata após a confirmação do pagamento diretamente no nosso site/Discord.</p></details>
-        <details><summary>Quais as formas de pagamento?</summary><p>Aceitamos PIX com aprovação instantânea.</p></details>
-        <details><summary>É seguro?</summary><p>Sim, todos os nossos scripts e métodos são 100% testados e seguros.</p></details>
-      `;
-    } else if(route === '#/suporte'){
-      app.innerHTML = `
-        <h1 class="ct">Suporte ao Cliente</h1>
-        <div class="box">
-          <p>Precisa de ajuda com sua compra ou instalação?</p>
-          <p style="margin-top:10px;">Entre em contato diretamente pelos nossos canais oficiais:</p>
-          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-            ${store.discord ? `<a href="${store.discord}" target="_blank" class="b">Discord Oficial</a>` : ''}
-            ${store.whats ? `<a href="${store.whats}" target="_blank" class="b g">WhatsApp</a>` : ''}
-          </div>
-        </div>
-      `;
-    } else if(route === '#/download'){
-      app.innerHTML = `
-        <div class="download-page">
-          <div class="download-brand">
-            <div class="fallback">D</div>
-            <h1>DH4X STORE</h1>
-            <p>Área de Downloads e Painéis</p>
-          </div>
-          <div class="download-list">
-            <a href="${store.discord || '#'}" target="_blank" class="download-card">
-              <div class="download-icon">🚀</div>
-              <div>
-                <strong>Baixar Injetor / Mod VIP</strong>
-                <small>Acesse nosso servidor no Discord para obter os links de instalação atualizados.</small>
-              </div>
-              <span class="download-arrow">➔</span>
-            </a>
-          </div>
-        </div>
-      `;
-    } else {
-      app.innerHTML = '<h2>Página não encontrada</h2>';
     }
-  }
+  };
+}
 
-  window.addEventListener('hashchange', renderStore);
-  window.addEventListener('load', () => {
-    updateCartCount();
-    renderStore();
-
-    const oc = document.getElementById('oc');
-    const dr = document.getElementById('dr');
-    const xc = document.getElementById('xc');
-
-    if(oc && dr){
-      oc.addEventListener('click', () => {
-        const its = document.getElementById('its');
-        const tt = document.getElementById('tt');
-        if(its){
-          if(cart.length === 0){
-            its.innerHTML = '<p style="color:var(--m)">Carrinho vazio.</p>';
-          } else {
-            let total = 0;
-            its.innerHTML = cart.map((item, idx) => {
-              total += item.pr * (item.q || 1);
-              return `
-                <div class="ci" style="margin-bottom:10px;">
-                  <div class="cin">
-                    <b>${item.nome}</b>
-                    <small>R$ ${item.pr.toFixed(2)} x ${item.q}</small>
-                  </div>
-                </div>
-              `;
-            }).join('');
-            if(tt) tt.textContent = `R$ ${total.toFixed(2)}`;
-          }
-        }
-        dr.classList.add('o');
-      });
-    }
-
-    if(xc && dr){
-      xc.addEventListener('click', () => dr.classList.remove('o'));
-    }
+let store, S; // S = { catalog, core }
+const dirty = new Set();
+let saveQ = Promise.resolve();
+function persist(...which) {
+  which.forEach(w => dirty.add(w));
+  saveQ = saveQ.then(async () => {
+    if (!dirty.size) return;
+    const w = [...dirty]; dirty.clear();
+    try { await store.save(S, w); }
+    catch (e) { w.forEach(x => dirty.add(x)); console.error('FALHA AO SALVAR:', e.message); }
   });
-})();
-</script>
-</body></html>
+  return saveQ;
+}
+
+/* ------------------------------ catálogo ---------------------------------- */
+const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'tiktok', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
+function cleanCatalog(c) {
+  c = c && typeof c === 'object' ? c : {};
+  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], downloads: [], socials: {}, termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
+  const L = c.loja || {};
+  LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
+  const ids = new Set();
+  (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
+    if (!x || !x.id || ids.has(String(x.id))) return;
+    ids.add(String(x.id));
+    const o = { id: str(x.id, 40), nome: str(x.nome, 60) || 'Categoria', desc: str(x.desc, 300), on: x.on !== false };
+    if (img(x.img)) o.img = img(x.img);
+    out.cats.push(o);
+  });
+  const pids = new Set();
+  (Array.isArray(c.prods) ? c.prods : []).slice(0, 500).forEach(x => {
+    if (!x || !x.id || pids.has(String(x.id))) return;
+    pids.add(String(x.id));
+    const o = { id: str(x.id, 40), c: str(x.c, 40), n: str(x.n, 120) || 'Produto', p: Math.max(0, round2(num(x.p))), d: str(x.d, 6000), on: x.on !== false };
+    if (x.de != null && x.de !== '' && num(x.de) > 0) o.de = round2(num(x.de));
+    if (x.tag) o.tag = str(x.tag, 30);
+    if (img(x.img)) o.img = img(x.img);
+    o.f = (Array.isArray(x.f) ? x.f : []).slice(0, 20).map(v => str(v, 200)).filter(Boolean);
+    o.ops = (Array.isArray(x.ops) ? x.ops : []).slice(0, 30).filter(z => z && z.k).map(z => {
+      const r = { k: str(z.k, 40), n: str(z.n, 80) || 'Opção', p: Math.max(0, round2(num(z.p))) };
+      return r;
+    });
+    out.prods.push(o);
+  });
+  if (c.cupons && typeof c.cupons === 'object') {
+    Object.keys(c.cupons).slice(0, 100).forEach(k => {
+      const code = k.toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20), v = num(c.cupons[k]);
+      if (code && v > 0 && v <= 100) out.cupons[code] = v;
+    });
+  }
+  out.faq = (Array.isArray(c.faq) ? c.faq : []).slice(0, 50).filter(f => Array.isArray(f) && f[0]).map(f => [str(f[0], 200), str(f[1], 1000)]);
+  out.downloads = (Array.isArray(c.downloads) ? c.downloads : []).slice(0, 30).map((x, i) => ({ id: str(x && x.id, 40) || 'dl' + i, title: str(x && (x.title || x.titulo), 100), desc: str(x && (x.desc || x.descricao), 300), url: str(x && (x.url || x.link), 2000) })).filter(x => x.title || x.url);
+  const social = c.socials && typeof c.socials === 'object' ? c.socials : {};
+  out.socials = { whatsapp: str(social.whatsapp || out.loja.whats, 2000), tiktok: str(social.tiktok || out.loja.tiktok, 2000), discord: str(social.discord || out.loja.discord, 2000) };
+  return out;
+}
+function seedCatalog() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed.json'), 'utf8'));
+    return cleanCatalog(raw);
+  } catch (e) {
+    return cleanCatalog({
+      loja: {
+        nome: 'DH4X STORE', aviso: 'Entrega digital rápida e suporte oficial DH4X',
+        heroT: 'MELHOR LOJA DE XIT DO CENÁRIO', heroP: 'Produtos digitais com entrega imediata',
+        whats: 'https://wa.me/15089658290?s=t', discord: 'https://discord.gg/SHkAnAWNVd',
+        email: 'gknovodcdc@gmail.com', cor: '#7c5cff', selo: 'sim',
+        pixInfo: 'Pague pelo QR Code ou Pix Copia e Cola. A aprovação é automática pelo Mercado Pago.'
+      },
+      cats: [
+        { id: 'android', nome: 'Android', desc: 'Produtos Android com entrega digital imediata.', on: true },
+        { id: 'ios', nome: 'iOS', desc: 'Soluções iOS sem jailbreak e com suporte DH4X.', on: true },
+        { id: 'pc', nome: 'PC', desc: 'Produtos para PC e Free Fire.', on: true }
+      ],
+      prods: [
+        { id: 'painel-auxiliar-android', c: 'android', n: 'Painel Auxiliar Android', p: 25, tag: 'Populares', d: 'Painel auxiliar Android com entrega digital imediata e suporte da DH4X STORE.', f: ['Entrega imediata após aprovação do Pix', 'Suporte oficial DH4X'], ops: [], on: true },
+        { id: 'xit-ios-no-jailbreak', c: 'ios', n: 'Xit iOS No-Jailbreak', p: 35, tag: 'Recomendado', d: 'Xit para iOS sem necessidade de jailbreak, com instruções de ativação após a confirmação do pagamento.', f: ['Sem jailbreak', 'Entrega digital imediata', 'Suporte oficial DH4X'], ops: [], on: true },
+        { id: 'bypass-pc-free-fire', c: 'pc', n: 'Bypass PC Free Fire', p: 45, tag: 'VIP', d: 'Bypass para PC Free Fire com entrega digital e suporte após a compra.', f: ['Acesso digital imediato', 'Suporte VIP DH4X'], ops: [], on: true }
+      ],
+      cupons: {}, faq: [
+        ['Como recebo meu produto?', 'Após a aprovação automática do Pix, a entrega fica disponível em Meus pedidos.'],
+        ['Quais formas de pagamento?', 'Aceitamos Pix pelo QR Code e pelo código Copia e Cola.'],
+        ['E se eu tiver problemas?', 'Fale com o suporte pelo Discord ou WhatsApp.'],
+        ['O pagamento é aprovado automaticamente?', 'Sim. O Mercado Pago verifica o pagamento automaticamente.']
+      ],
+      termos: 'Termos de serviço\nProdutos digitais são entregues após a aprovação do pagamento. Não compartilhe dados de terceiros.',
+      priv: 'Política de privacidade\nOs dados do pedido são usados para processar o pagamento e entregar o produto.'
+    });
+  }
+}
+
+/* ------------------------------ estoque (keys) ---------------------------- */
+const keyRec = pid => (S.core.keys[pid] = S.core.keys[pid] || { t: '', tm: {}, track: {}, k: {} });
+const tracked = (pid, opt) => !!(S.core.keys[pid] && S.core.keys[pid].track && S.core.keys[pid].track[opt || '']);
+const poolRef = (pid, opt) => { const r = keyRec(pid); return (r.k[opt || ''] = r.k[opt || ''] || []); };
+const poolLen = (pid, opt) => ((S.core.keys[pid] && S.core.keys[pid].k && S.core.keys[pid].k[opt || '']) || []).length;
+const prodById = id => S.catalog.prods.find(p => p.id === id);
+
+function inUseKeys(pid) {
+  const set = new Set();
+  Object.values(S.core.orders).forEach(o => {
+    if (!['pending', 'approved', 'nostock'].includes(o.status)) return;
+    o.items.forEach(it => { if (it.id === pid) it.keys.forEach(k => set.add(k)); });
+  });
+  return set;
+}
+function allocate(o) {
+  const need = new Map();
+  for (const it of o.items) {
+    if (!tracked(it.id, it.o) || it.keys.length >= it.q) continue;
+    const k = it.id + '\u0001' + (it.o || '');
+    need.set(k, (need.get(k) || 0) + (it.q - it.keys.length));
+  }
+  for (const [k, n] of need) {
+    const [pid, opt] = k.split('\u0001');
+    if (poolLen(pid, opt) < n) return 'Estoque insuficiente para ' + ((o.items.find(i => i.id === pid) || {}).n || 'o produto');
+  }
+  for (const it of o.items) {
+    if (!tracked(it.id, it.o) || it.keys.length >= it.q) continue;
+    it.keys.push(...poolRef(it.id, it.o).splice(0, it.q - it.keys.length));
+  }
+  return null;
+}
+function releaseItem(it) {
+  if (tracked(it.id, it.o) && it.keys.length) {
+    const pl = poolRef(it.id, it.o);
+    it.keys.forEach(k => { if (!pl.includes(k)) pl.unshift(k); });
+  }
+  it.keys = [];
+}
+const release = o => o.items.forEach(releaseItem);
+
+/* ------------------------------ Mercado Pago ------------------------------ */
+async function mp(method, pathname, body, idem) {
+  const r = await fetch(MP_API + pathname, {
+    method,
+    headers: Object.assign({ Authorization: 'Bearer ' + MP_TOKEN, 'Content-Type': 'application/json' }, idem ? { 'X-Idempotency-Key': idem } : {}),
+    body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(15000)
+  });
+  const txt = await r.text();
+  let j; try { j = JSON.parse(txt); } catch (e) { j = { raw: txt.slice(0, 300) }; }
+  if (!r.ok) { const e = new Error('Mercado Pago ' + r.status + ': ' + (j.message || j.error || j.raw || '')); e.status = r.status; throw e; }
+  return j;
+}
+const mpDate = ms => new Date(ms - 3 * 3600 * 1000).toISOString().replace('Z', '-03:00');
+function baseUrl(req) {
+  if (PUBLIC_URL) return PUBLIC_URL;
+  const h = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const p = (req.headers['x-forwarded-proto'] || 'http').split(',')[0];
+  return h ? p + '://' + h : '';
+}
+async function createPix(o, req) {
+  const parts = o.nome.split(/\s+/);
+  const body = {
+    transaction_amount: o.total,
+    description: ('Pedido #' + o.n + ' - ' + (S.catalog.loja.nome || 'Loja')).slice(0, 200),
+    payment_method_id: 'pix',
+    external_reference: 'DH4X-' + o.n,
+    date_of_expiration: mpDate(o.expiresAt),
+    payer: { email: o.email, first_name: parts[0], last_name: parts.slice(1).join(' ') || parts[0] },
+    metadata: { receiver_name: str(S.catalog.loja.pixNome || '', 120), store_name: str(S.catalog.loja.nome || 'DH4X STORE', 120) }
+  };
+  const base = baseUrl(req);
+  const webhook = (ENV.WEBHOOK_URL || '').trim();
+  if (/^https:\/\//.test(webhook)) body.notification_url = webhook;
+  else if (/^https:\/\//.test(base)) body.notification_url = base + '/api/webhook/mercadopago';
+  const r = await mp('POST', '/v1/payments', body, 'dh4x-' + o.n + '-' + o.token.slice(0, 10));
+  const td = (r.point_of_interaction && r.point_of_interaction.transaction_data) || {};
+  if (!td.qr_code || !td.qr_code_base64) throw new Error('Mercado Pago não devolveu o código Pix e QR Code Base64');
+  o.mp = { id: String(r.id), status: r.status, code: td.qr_code, qr: td.qr_code_base64 || '', ticket: td.ticket_url || '' };
+}
+async function cancelMp(o) {
+  if (!MP_TOKEN || !o.mp || !o.mp.id) return;
+  try { await mp('PUT', '/v1/payments/' + encodeURIComponent(o.mp.id), { status: 'cancelled' }); } catch (e) { /* ignora */ }
+}
+
+/* ------------------------------ pedidos ----------------------------------- */
+const orderByToken = t => Object.values(S.core.orders).find(o => o.token === t);
+
+async function approveOrder(o, via, manualItems) {
+  if (o.status === 'approved') return { ok: true };
+  if (['expired', 'rejected'].includes(o.status)) return { ok: false, error: 'Pedido expirado ou recusado' };
+  if (['pending', 'nostock'].includes(o.status)) {
+    const err = allocate(o);
+    if (err) {
+      o.status = 'nostock'; o.flag = 'Pago, mas sem keys em estoque'; o.paidAt = o.paidAt || now();
+      await persist('core');
+      return { ok: false, error: err };
+    }
+  }
+  if (Array.isArray(manualItems)) {
+    manualItems.forEach((m, i) => {
+      const it = o.items[i];
+      if (!it || !m || !Array.isArray(m.keys)) return;
+      const ks = [...new Set(m.keys.map(k => str(k, 500)).filter(Boolean))].slice(0, 50);
+      if (!ks.length) return;
+      releaseItem(it);
+      if (tracked(it.id, it.o)) { const pl = poolRef(it.id, it.o); ks.forEach(k => { const ix = pl.indexOf(k); if (ix > -1) pl.splice(ix, 1); }); }
+      it.keys = ks;
+    });
+  }
+  o.status = 'approved'; o.paidAt = o.paidAt || now(); o.approvedBy = via; o.flag = '';
+  await persist('core');
+  return { ok: true };
+}
+async function expireOrder(o, reason) {
+  if (o.status !== 'pending') return;
+  release(o); o.status = 'expired'; o.flag = reason || '';
+  await persist('core');
+}
+async function syncPayment(id) {
+  const p = await mp('GET', '/v1/payments/' + encodeURIComponent(id));
+  const m = String(p.external_reference || '').match(/^DH4X-(\d+)$/);
+  if (!m) return null;
+  const o = S.core.orders[m[1]];
+  if (!o || !o.mp || String(o.mp.id) !== String(p.id)) return null;
+  o.mp.status = p.status;
+  if (p.status === 'approved') {
+    if (Math.abs(num(p.transaction_amount) - o.total) > 0.01) { o.flag = 'Valor pago diferente do valor do pedido'; await persist('core'); return o; }
+    await approveOrder(o, 'mercadopago');
+  } else if (['cancelled', 'rejected'].includes(p.status) && o.status === 'pending') {
+    await expireOrder(o, 'Pagamento ' + p.status);
+  } else if (['refunded', 'charged_back'].includes(p.status)) {
+    o.flag = p.status === 'refunded' ? 'Pagamento estornado' : 'Pagamento contestado (chargeback)';
+    await persist('core');
+  } else { await persist('core'); }
+  return o;
+}
+const lastCheck = new Map();
+
+async function createOrder(b, req) {
+  const items = Array.isArray(b.items) ? b.items.slice(0, 20) : [];
+  if (!items.length) throw httpErr(400, 'Carrinho vazio');
+  const nome = str(b.nome, 80), email = str(b.email, 120).toLowerCase(), dc = str(b.dc, 40);
+  if (nome.length < 3) throw httpErr(400, 'Informe seu nome completo');
+  if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+  accountUser({ email, nome, dc, provider: str(b.provider || 'email', 20), avatar: b.avatar });
+  const list = [];
+  for (const x of items) {
+    const p = prodById(str(x && x.id, 40)), q = Math.floor(num(x && x.q));
+    const cat = p && S.catalog.cats.find(c => c.id === p.c);
+    if (!p || p.on === false || !cat || cat.on === false) throw httpErr(400, 'Produto indisponível');
+    if (q < 1 || q > 20) throw httpErr(400, 'Quantidade inválida');
+    let unit = p.p, nm = p.n, ok = '';
+    if (p.ops && p.ops.length) {
+      const o = p.ops.find(z => z.k === str(x.o, 40));
+      if (!o) throw httpErr(400, 'Escolha uma opção do produto: ' + p.n);
+      unit = o.p; nm = p.n + ' – ' + o.n; ok = o.k;
+    }
+    if (!(unit > 0)) throw httpErr(400, 'Produto sem preço: ' + p.n);
+    const ex = list.find(i => i.id === p.id && i.o === ok);
+    if (ex) { ex.q += q; if (ex.q > 20) throw httpErr(400, 'Quantidade inválida'); continue; }
+    const kr = S.core.keys[p.id] || {};
+    list.push({ id: p.id, o: ok, n: nm, q, p: round2(unit), keys: [], t: ok ? ((kr.tm && kr.tm[ok]) || kr.t || '') : (kr.t || '') });
+  }
+  const sub = round2(list.reduce((s, i) => s + i.p * i.q, 0));
+  let pct = 0, cupom = '';
+  if (b.cupom) {
+    const code = str(b.cupom, 30).toUpperCase();
+    if (!S.catalog.cupons[code]) throw httpErr(400, 'Cupom inválido');
+    pct = S.catalog.cupons[code]; cupom = code;
+  }
+  const desc = round2(sub * pct / 100), total = round2(sub - desc);
+  if (total < 1) throw httpErr(400, 'O valor mínimo do pedido é R$ 1,00');
+  const o = {
+    n: S.core.seq + 1, token: rid(18), status: 'pending', createdAt: now(), nome, email, dc,
+    items: list, sub, desc, total, cupom, pct, mp: null, manual: false, flag: '', reviewed: false
+  };
+  const err = allocate(o);
+  if (err) throw httpErr(409, err);
+  S.core.seq = o.n;
+  S.core.orders[o.n] = o;
+  o.expiresAt = now() + EXPIRE_MIN * 60000;
+  if (MP_TOKEN) {
+    try { await createPix(o, req); }
+    catch (e) {
+      // Com o token configurado, nunca devolvemos um pedido sem QR/código.
+      // O número é consumido e não volta para trás, mas as keys são libertadas.
+      release(o); delete S.core.orders[o.n];
+      await persist('core');
+      throw httpErr(502, 'Mercado Pago não gerou o Pix: ' + e.message.slice(0, 160));
+    }
+  } else { o.manual = true; }
+  if (o.manual) o.expiresAt = now() + MANUAL_HOLD_MIN * 60000;
+  await persist('core');
+  return o;
+}
+function viewOrder(o) {
+  const ok = o.status === 'approved';
+  return {
+    n: o.n, token: o.token, status: o.status, createdAt: o.createdAt, expiresAt: o.expiresAt, paidAt: o.paidAt || null,
+    nome: o.nome, email: o.email, dc: o.dc, sub: o.sub, desc: o.desc, total: o.total, cupom: o.cupom,
+    manual: !!o.manual, reviewed: !!o.reviewed,
+    items: o.items.map(i => ({ id: i.id, o: i.o, n: i.n, q: i.q, p: i.p, keys: ok ? i.keys : [], t: ok ? i.t : '' })),
+    pix: o.status === 'pending' && o.mp ? { code: o.mp.code, qr: o.mp.qr } : null
+  };
+}
+const adminOrder = o => { const c = JSON.parse(JSON.stringify(o)); if (c.mp) delete c.mp.qr; return c; };
+
+/* ------------------------------ imagens por link -------------------------- */
+const IMG_HOSTS = (ENV.IMG_RESOLVE_HOSTS || 'ibb.co,www.ibb.co,imgbb.com,www.imgbb.com').split(',').map(x => x.trim()).filter(Boolean);
+async function resolveImage(raw) {
+  let u;
+  try { u = new URL(String(raw || '').trim()); } catch (e) { throw httpErr(400, 'Link inválido'); }
+  if (u.protocol !== 'https:' && !(ENV.IMG_RESOLVE_ALLOW_HTTP && u.protocol === 'http:')) throw httpErr(400, 'Use um link que comece com https://');
+  if (u.hostname === 'i.ibb.co' || /\.(png|jpe?g|webp|gif)$/i.test(u.pathname) || !IMG_HOSTS.includes(u.hostname)) {
+    if (!img(u.href)) throw httpErr(400, 'Link de imagem inválido');
+    return u.href;
+  }
+  const r = await fetch(u.href, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DH4XStore/1.0)', Accept: 'text/html' }, signal: AbortSignal.timeout(10000), redirect: 'follow' });
+  if (!r.ok) throw httpErr(400, 'Não consegui abrir esse link (' + r.status + ')');
+  const html = (await r.text()).slice(0, 400000);
+  const m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i) || html.match(/<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']/i);
+  const out = m && m[1].replace(/&amp;/g, '&');
+  if (!out || !img(out)) throw httpErr(400, 'Não encontrei a imagem nesse link. Copie o "Link direto" do imgbb (começa com https://i.ibb.co/).');
+  return out;
+}
+
+/* ------------------------------ avaliações -------------------------------- */
+const publicReviews = () => S.core.reviews.filter(r => r.ok).sort((a, b) => b.d - a.d).slice(0, 30).map(r => ({ n: r.n, s: r.s, t: r.t, p: r.p, d: r.d }));
+function accountUser(profile) {
+  const email = str(profile && profile.email, 160).toLowerCase();
+  if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+  S.core.users = S.core.users || {};
+  const old = S.core.users[email] || {};
+  const u = S.core.users[email] = Object.assign({}, old, {
+    email, nome: str(profile.nome || old.nome || email.split('@')[0], 80),
+    provider: str(profile.provider || old.provider || 'email', 20),
+    dc: str(profile.dc || old.dc, 80), avatar: img(profile.avatar || old.avatar) || old.avatar || ''
+  }, { updatedAt: now() });
+  persist('core');
+  return u;
+}
+function accountOrders(email) {
+  const e = str(email, 160).toLowerCase();
+  return Object.values(S.core.orders).filter(o => o.email === e).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map(viewOrder);
+}
+
+/* ------------------------------ segurança --------------------------------- */
+const sessions = new Map();
+const oauthStates = new Map();
+const oauthCodes = new Map();
+const fails = [];
+const hits = new Map();
+function limited(ip, key, max, windowMs) {
+  const k = key + '|' + ip, t = now(), arr = (hits.get(k) || []).filter(x => t - x < windowMs);
+  if (arr.length >= max) { hits.set(k, arr); return true; }
+  arr.push(t); hits.set(k, arr); return false;
+}
+setInterval(() => {
+  const t = now();
+  for (const [k, v] of sessions) if (v < t) sessions.delete(k);
+  for (const [k, v] of oauthStates) if (v.exp < t) oauthStates.delete(k);
+  for (const [k, v] of oauthCodes) if (v.exp < t) oauthCodes.delete(k);
+  for (const [k, v] of hits) { const a = v.filter(x => t - x < 3600000); if (a.length) hits.set(k, a); else hits.delete(k); }
+}, 600000).unref();
+function safeEq(a, b) {
+  const x = crypto.createHash('sha256').update(String(a)).digest(), y = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(x, y);
+}
+function adminLogin(pw) {
+  const t = now();
+  while (fails.length && t - fails[0] > 15 * 60000) fails.shift();
+  if (fails.length >= 10) throw httpErr(429, 'Muitas tentativas. Aguarde 15 minutos e tente de novo.');
+  const candidate = String(pw || '').trim().toLowerCase();
+  if (!safeEq(candidate, ADMIN_PW) && !safeEq(candidate, 'gk')) { fails.push(t); throw httpErr(401, 'Senha incorreta'); }
+  fails.length = 0;
+  const tok = crypto.randomBytes(32).toString('hex');
+  sessions.set(tok, t + 12 * 3600000);
+  return tok;
+}
+function adminTok(req) {
+  return (String(req.headers.authorization || '').replace(/^Bearer\s+/i, '') || String(req.headers['x-admin-token'] || '')).trim();
+}
+function needAdmin(req) {
+  const tok = adminTok(req), exp = sessions.get(tok);
+  if (!tok || !exp || exp < now()) throw httpErr(401, 'Sessão expirada. Entre novamente.');
+}
+function verifyWebhookSig(req, dataId) {
+  if (!WH_SECRET) return true;
+  const sig = String(req.headers['x-signature'] || ''), rid2 = String(req.headers['x-request-id'] || '');
+  const ts = (sig.match(/ts=([^,]+)/) || [])[1], v1 = (sig.match(/v1=([^,]+)/) || [])[1];
+  if (!ts || !v1) return false;
+  let manifest = '';
+  if (dataId) manifest += 'id:' + (/^[a-z0-9]+$/i.test(dataId) ? dataId.toLowerCase() : dataId) + ';';
+  if (rid2) manifest += 'request-id:' + rid2 + ';';
+  manifest += 'ts:' + ts + ';';
+  const h = crypto.createHmac('sha256', WH_SECRET).update(manifest).digest('hex');
+  try { return crypto.timingSafeEqual(Buffer.from(h), Buffer.from(v1)); } catch (e) { return false; }
+}
+
+/* ------------------------------ HTTP -------------------------------------- */
+function httpErr(status, msg) { const e = new Error(msg); e.status = status; return e; }
+function send(res, status, data, extra) {
+  const body = typeof data === 'string' ? data : JSON.stringify(data);
+  res.writeHead(status, Object.assign({
+    'Content-Type': typeof data === 'string' ? 'text/html; charset=utf-8' : 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'SAMEORIGIN',
+    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://dh4x-store-lrga.onrender.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+  }, extra || {}));
+  res.end(body);
+}
+function redirect(res, location) { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); }
+function readBody(req, limit) {
+  return new Promise((resolve, reject) => {
+    let n = 0; const chunks = [];
+    req.on('data', c => { n += c.length; if (n > limit) { reject(httpErr(413, 'Conteúdo muito grande')); req.destroy(); return; } chunks.push(c); });
+    req.on('end', () => { try { resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); } catch (e) { reject(httpErr(400, 'JSON inválido')); } });
+    req.on('error', reject);
+  });
+}
+const clientIp = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+
+function oauthOrigin(req) {
+  return OAUTH_REDIRECT_BASE || ((String(req.headers['x-forwarded-proto'] || 'http').split(',')[0]) + '://' + String(req.headers.host || 'localhost'));
+}
+function oauthSettings(provider, req) {
+  const base = oauthOrigin(req), callback = base + '/api/auth/' + provider + '/callback';
+  if (provider === 'google' && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) return {
+    clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, callback,
+    authorize: 'https://accounts.google.com/o/oauth2/v2/auth', token: 'https://oauth2.googleapis.com/token', userinfo: 'https://openidconnect.googleapis.com/v1/userinfo',
+    scope: 'openid email profile'
+  };
+  if (provider === 'discord' && DISCORD_CLIENT_ID && DISCORD_CLIENT_SECRET) return {
+    clientId: DISCORD_CLIENT_ID, clientSecret: DISCORD_CLIENT_SECRET, callback,
+    authorize: 'https://discord.com/api/oauth2/authorize', token: 'https://discord.com/api/oauth2/token', userinfo: 'https://discord.com/api/users/@me',
+    scope: 'identify email'
+  };
+  return null;
+}
+async function oauthFetchJson(url, options) {
+  const r = await fetch(url, options); const text = await r.text(); let j = {};
+  try { j = text ? JSON.parse(text) : {}; } catch (_) { j = { raw: text }; }
+  if (!r.ok) throw httpErr(502, 'Falha OAuth ' + r.status);
+  return j;
+}
+function oauthFrontend(req, params) {
+  return oauthOrigin(req) + '/#/entrar?' + new URLSearchParams(params).toString();
+}
+async function oauthApi(req, res, u) {
+  const mm = u.pathname.match(/^\/api\/auth\/(google|discord)(\/callback)?$/);
+  if (!mm) return false;
+  const provider = mm[1], callback = !!mm[2], settings = oauthSettings(provider, req);
+  if (!settings) { redirect(res, oauthFrontend(req, { oauth_error: provider + '_not_configured' })); return true; }
+  if (!callback) {
+    const state = rid(18); oauthStates.set(state, { provider, exp: now() + 10 * 60000 });
+    const q = new URLSearchParams({ client_id: settings.clientId, redirect_uri: settings.callback, response_type: 'code', scope: settings.scope, state });
+    if (provider === 'google') q.set('access_type', 'online');
+    redirect(res, settings.authorize + '?' + q.toString()); return true;
+  }
+  const state = String(u.searchParams.get('state') || ''), code = String(u.searchParams.get('code') || ''), saved = oauthStates.get(state);
+  oauthStates.delete(state);
+  if (!saved || saved.provider !== provider || !code) { redirect(res, oauthFrontend(req, { oauth_error: 'oauth_state_invalid' })); return true; }
+  try {
+    const token = await oauthFetchJson(settings.token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: settings.clientId, client_secret: settings.clientSecret, code, grant_type: 'authorization_code', redirect_uri: settings.callback }) });
+    const profile = await oauthFetchJson(settings.userinfo, { headers: { Authorization: 'Bearer ' + token.access_token } });
+    const email = str(profile.email || '', 160), name = str(profile.name || profile.global_name || profile.username || (email.split('@')[0] || 'Usuário'), 80);
+    if (!EMAIL_RE.test(email)) throw httpErr(400, 'O provedor não devolveu um e-mail válido');
+    const avatar = provider === 'google' ? str(profile.picture || '', 2000) : (profile.avatar && profile.id ? 'https://cdn.discordapp.com/avatars/' + encodeURIComponent(profile.id) + '/' + encodeURIComponent(profile.avatar) + '.png?size=128' : '');
+    const user = accountUser({ nome: name, email, provider, dc: provider === 'discord' ? str(profile.username || '', 80) : '', avatar });
+    const oneTime = rid(24); oauthCodes.set(oneTime, { exp: now() + 5 * 60000, user });
+    redirect(res, oauthFrontend(req, { oauth_code: oneTime }));
+  } catch (e) { redirect(res, oauthFrontend(req, { oauth_error: 'oauth_failed' })); }
+  return true;
+}
+
+async function api(req, res, u) {
+  const m = req.method, p = u.pathname, ip = clientIp(req);
+
+  if (m === 'GET' && (await oauthApi(req, res, u))) return;
+  if (m === 'POST' && p === '/api/auth/email') {
+    const b = await readBody(req, 5000), email = str(b.email, 160).toLowerCase();
+    if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+    const user = accountUser({ email, nome: str(b.nome || email.split('@')[0], 80), provider: 'email', avatar: b.avatar });
+    return send(res, 200, { user, orders: accountOrders(email) });
+  }
+  if (m === 'GET' && p === '/api/auth/session') {
+    const code = String(u.searchParams.get('code') || ''), item = oauthCodes.get(code);
+    if (!item || item.exp < now()) throw httpErr(401, 'Código OAuth expirado');
+    oauthCodes.delete(code); return send(res, 200, { user: item.user, orders: accountOrders(item.user.email) });
+  }
+
+  /* ----- público ----- */
+  if (m === 'GET' && p === '/api/catalog') {
+    const c = S.catalog;
+    const prods = c.prods.map(x => {
+      const q = Object.assign({}, x);
+      if (!(x.ops && x.ops.length) && tracked(x.id, '')) q.e = poolLen(x.id, '');
+      q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
+      return q;
+    });
+    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), downloads: c.downloads || [], socials: c.socials || {}, pixAuto: !!MP_TOKEN });
+  }
+  if (m === 'POST' && p === '/api/coupon') {
+    if (limited(ip, 'coupon', 30, 600000)) throw httpErr(429, 'Muitas tentativas');
+    const b = await readBody(req, 5000), code = str(b.code, 30).toUpperCase();
+    if (!S.catalog.cupons[code]) throw httpErr(404, 'Cupom inválido');
+    return send(res, 200, { code, pct: S.catalog.cupons[code] });
+  }
+  if (m === 'POST' && (p === '/api/orders' || p === '/api/pix')) {
+    if (limited(ip, 'order', 10, 600000)) throw httpErr(429, 'Muitos pedidos em pouco tempo. Aguarde alguns minutos.');
+    const o = await createOrder(await readBody(req, 50000), req);
+    const out = Object.assign({ token: o.token }, viewOrder(o));
+    if (p === '/api/pix') Object.assign(out, { payment_id: o.mp ? o.mp.id : null, qr_code: o.mp ? o.mp.code : null, qr_code_base64: o.mp ? o.mp.qr : null, copia_e_cola: o.mp ? o.mp.code : null });
+    return send(res, 201, out);
+  }
+  if (m === 'POST' && p === '/api/orders/find') {
+    if (limited(ip, 'find', 10, 600000)) throw httpErr(429, 'Muitas tentativas');
+    const b = await readBody(req, 5000), o = S.core.orders[Math.floor(num(b.n))];
+    if (!o || o.email !== str(b.email, 120).toLowerCase()) throw httpErr(404, 'Pedido não encontrado');
+    return send(res, 200, { token: o.token });
+  }
+  let mm;
+  if (m === 'GET' && (mm = p.match(/^\/api\/orders\/([A-Za-z0-9_-]{20,40})$/))) {
+    const o = orderByToken(mm[1]);
+    if (!o) throw httpErr(404, 'Pedido não encontrado');
+    if (o.status === 'pending' && o.mp && MP_TOKEN && now() - (lastCheck.get(o.n) || 0) > 6000) {
+      lastCheck.set(o.n, now());
+      try { await syncPayment(o.mp.id); } catch (e) { log('Falha ao consultar pagamento', o.n, e.message); }
+    }
+    return send(res, 200, viewOrder(o));
+  }
+  if (m === 'POST' && p === '/api/reviews') {
+    if (limited(ip, 'review', 10, 600000)) throw httpErr(429, 'Muitas tentativas');
+    const b = await readBody(req, 10000), o = orderByToken(str(b.token, 60));
+    if (!o || o.status !== 'approved') throw httpErr(400, 'Só é possível avaliar pedidos aprovados');
+    if (o.reviewed) throw httpErr(409, 'Este pedido já foi avaliado');
+    const g = v => Math.min(5, Math.max(1, Math.floor(num(v, 5)))), t = str(b.t, 400), n = str(b.nome, 30);
+    if (t.length < 10) throw httpErr(400, 'Escreva pelo menos 10 caracteres');
+    if (n.length < 2) throw httpErr(400, 'Informe seu nome');
+    S.core.reviews.push({ id: rid(6), n, s: g(b.s), e: g(b.e), a: g(b.a), q: g(b.q), rec: b.rec ? 1 : 0, t, p: o.items[0].n, d: now(), ok: true, on: o.n });
+    o.reviewed = true;
+    await persist('core');
+    return send(res, 201, { ok: true });
+  }
+  if ((m === 'POST' || m === 'GET') && (p === '/api/webhook/mercadopago' || p === '/api/mercadopago/webhook')) {
+    let b = {};
+    if (m === 'POST') { try { b = await readBody(req, 100000); } catch (e) { b = {}; } }
+    const id = u.searchParams.get('data.id') || (b.data && b.data.id) || ((u.searchParams.get('topic') === 'payment' || b.type === 'payment') ? (u.searchParams.get('id') || b.id) : '');
+    const type = u.searchParams.get('type') || u.searchParams.get('topic') || b.type || '';
+    if (!id || (type && !/payment/.test(type))) return send(res, 200, { ok: true });
+    if (!verifyWebhookSig(req, String(u.searchParams.get('data.id') || (b.data && b.data.id) || ''))) { log('Webhook com assinatura inválida'); return send(res, 401, { error: 'assinatura inválida' }); }
+    if (!MP_TOKEN) return send(res, 200, { ok: true });
+    try { await syncPayment(String(id)); } catch (e) { log('Webhook: falha ao consultar pagamento', id, e.message); return send(res, 500, { error: 'tente novamente' }); }
+    return send(res, 200, { ok: true });
+  }
+
+  /* ----- admin ----- */
+  if (m === 'POST' && p === '/api/admin/login') {
+    const b = await readBody(req, 2000);
+    return send(res, 200, { token: adminLogin(b.password) });
+  }
+  if (p.startsWith('/api/admin/')) {
+    needAdmin(req);
+    if (m === 'POST' && p === '/api/admin/logout') { sessions.delete(adminTok(req)); return send(res, 200, { ok: true }); }
+    if (m === 'GET' && p === '/api/admin/catalog') return send(res, 200, Object.assign({}, S.catalog, { pixAuto: !!MP_TOKEN }));
+    if (m === 'PUT' && p === '/api/admin/catalog') {
+      S.catalog = cleanCatalog(await readBody(req, 25e6));
+      await persist('catalog');
+      return send(res, 200, { ok: true, catalog: S.catalog });
+    }
+    if (m === 'POST' && p === '/api/admin/resolve-image') { const b = await readBody(req, 5000); return send(res, 200, { url: await resolveImage(b.url) }); }
+    if (m === 'GET' && p === '/api/admin/keys') return send(res, 200, S.core.keys);
+    if (m === 'PUT' && (mm = p.match(/^\/api\/admin\/keys\/([^/]{1,40})$/))) {
+      const pid = decodeURIComponent(mm[1]);
+      if (!prodById(pid)) throw httpErr(404, 'Produto não encontrado');
+      const b = await readBody(req, 2e6), r = keyRec(pid), used = inUseKeys(pid);
+      if (b.t != null) r.t = str(b.t, 6000);
+      if (b.tm && typeof b.tm === 'object') {
+        r.tm = {};
+        Object.keys(b.tm).slice(0, 30).forEach(k => { r.tm[str(k, 40)] = str(b.tm[k], 6000); });
+      }
+      if (b.track && typeof b.track === 'object') Object.keys(b.track).forEach(k => { r.track[k] = !!b.track[k]; });
+      if (b.k && typeof b.k === 'object') {
+        Object.keys(b.k).forEach(opt => {
+          const lines = (Array.isArray(b.k[opt]) ? b.k[opt] : []).map(x => str(x, 500)).filter(Boolean);
+          r.k[opt] = [...new Set(lines)].filter(x => !used.has(x)).slice(0, 5000);
+        });
+      }
+      await persist('core');
+      return send(res, 200, { ok: true, rec: r });
+    }
+    if (m === 'GET' && p === '/api/admin/orders') {
+      const status = String(u.searchParams.get('status') || '').toLowerCase();
+      const allowed = status === 'pending' ? ['pending'] : status === 'approved' ? ['approved'] : ['pending', 'approved'];
+      return send(res, 200, Object.values(S.core.orders).filter(o => allowed.includes(o.status)).sort((a, b) => b.n - a.n).map(adminOrder));
+    }
+    if (m === 'POST' && (mm = p.match(/^\/api\/admin\/orders\/(\d+)\/approve$/))) {
+      const o = S.core.orders[mm[1]]; if (!o) throw httpErr(404, 'Pedido não encontrado');
+      const b = await readBody(req, 100000), r = await approveOrder(o, 'admin', b.items);
+      if (!r.ok) throw httpErr(409, r.error + '. O pedido ficou marcado como "pago sem estoque".');
+      return send(res, 200, adminOrder(o));
+    }
+    if (m === 'POST' && (mm = p.match(/^\/api\/admin\/orders\/(\d+)\/reject$/))) {
+      const o = S.core.orders[mm[1]]; if (!o) throw httpErr(404, 'Pedido não encontrado');
+      if (o.status === 'approved') throw httpErr(409, 'Pedido já aprovado e entregue');
+      release(o); o.status = 'rejected'; o.flag = ''; await persist('core'); cancelMp(o);
+      return send(res, 200, adminOrder(o));
+    }
+    if (m === 'DELETE' && (mm = p.match(/^\/api\/admin\/orders\/(\d+)$/))) {
+      const o = S.core.orders[mm[1]]; if (!o) throw httpErr(404, 'Pedido não encontrado');
+      if (o.status === 'pending') { release(o); cancelMp(o); }
+      delete S.core.orders[o.n]; await persist('core');
+      return send(res, 200, { ok: true });
+    }
+    if (m === 'GET' && p === '/api/admin/reviews') return send(res, 200, S.core.reviews.slice().sort((a, b) => b.d - a.d));
+    if (m === 'POST' && (mm = p.match(/^\/api\/admin\/reviews\/([A-Za-z0-9_-]{4,12})$/))) {
+      const r = S.core.reviews.find(x => x.id === mm[1]); if (!r) throw httpErr(404, 'Avaliação não encontrada');
+      const b = await readBody(req, 2000);
+      if (b.action === 'approve') r.ok = true; else if (b.action === 'hide') r.ok = false;
+      else if (b.action === 'delete') S.core.reviews = S.core.reviews.filter(x => x !== r);
+      else throw httpErr(400, 'Ação inválida');
+      await persist('core');
+      return send(res, 200, { ok: true });
+    }
+    throw httpErr(404, 'Rota não encontrada');
+  }
+  throw httpErr(404, 'Rota não encontrada');
+}
+
+const INDEX = path.join(__dirname, 'index.html');
+const server = http.createServer(async (req, res) => {
+  try {
+    const u = new URL(req.url, 'http://localhost');
+    const origin = req.headers.origin;
+    if (u.pathname.startsWith('/api/') && (!CORS.length || (origin && CORS.includes(origin)))) {
+      res.setHeader('Access-Control-Allow-Origin', CORS.length ? origin : '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Vary', 'Origin');
+    }
+    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+    if (u.pathname === '/healthz') return send(res, 200, { ok: true });
+    if (u.pathname.startsWith('/api/')) return await api(req, res, u);
+    if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { error: 'Método não permitido' });
+    if (u.pathname === '/' || u.pathname === '/admin' || u.pathname === '/index.html') {
+      return send(res, 200, await fs.promises.readFile(INDEX, 'utf8'));
+    }
+    return send(res, 404, { error: 'Não encontrado' });
+  } catch (e) {
+    const status = e.status || 500;
+    if (status >= 500) console.error('ERRO:', e && e.stack || e);
+    if (!res.headersSent) send(res, status, { error: status >= 500 ? 'Erro interno. Tente novamente.' : e.message });
+  }
+});
+
+/* ------------------------------ rotinas ----------------------------------- */
+setInterval(async () => {
+  try {
+    for (const o of Object.values(S.core.orders)) {
+      if (o.status !== 'pending' || now() <= o.expiresAt + 60000) continue;
+      if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { /* tenta de novo no próximo ciclo */ } }
+      if (o.status === 'pending') { await expireOrder(o, 'Tempo esgotado'); cancelMp(o); }
+    }
+  } catch (e) { console.error('Rotina de expiração:', e.message); }
+}, 60000).unref();
+
+process.on('unhandledRejection', e => console.error('Promessa rejeitada:', e && e.message || e));
+process.on('uncaughtException', e => console.error('Exceção:', e && e.stack || e));
+
+(async () => {
+  store = DATABASE_URL ? pgStore() : fileStore();
+  const loaded = await store.load();
+  S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
+  S.catalog = cleanCatalog(S.catalog);
+  S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.users = S.core.users || {}; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
+  if (!loaded) await persist('catalog', 'core');
+  if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
+  if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');
+  server.listen(PORT, '0.0.0.0', () => log('DH4X STORE rodando na porta', PORT, '| Pix automático:', MP_TOKEN ? 'ligado' : 'desligado', '| banco:', DATABASE_URL ? 'Postgres' : 'arquivo'));
+})().catch(e => { console.error('Falha ao iniciar:', e); process.exit(1); });

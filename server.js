@@ -100,7 +100,7 @@ function cleanCatalog(c) {
   const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
-  if (!out.loja.nome) out.loja.nome = 'Minha Loja';
+  // Nome vazio é preservado para deixar o espaço ao lado da logo limpo.
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
     if (!x || !x.id || ids.has(String(x.id))) return;

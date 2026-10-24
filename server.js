@@ -94,13 +94,12 @@ function persist(...which) {
 }
 
 /* ------------------------------ catálogo ---------------------------------- */
-const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
+const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'tiktok', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
-  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
+  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], downloads: [], socials: {}, termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
-  if (!out.loja.nome) out.loja.nome = 'Minha Loja';
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
     if (!x || !x.id || ids.has(String(x.id))) return;
@@ -131,6 +130,9 @@ function cleanCatalog(c) {
     });
   }
   out.faq = (Array.isArray(c.faq) ? c.faq : []).slice(0, 50).filter(f => Array.isArray(f) && f[0]).map(f => [str(f[0], 200), str(f[1], 1000)]);
+  out.downloads = (Array.isArray(c.downloads) ? c.downloads : []).slice(0, 30).map((x, i) => ({ id: str(x && x.id, 40) || 'dl' + i, title: str(x && (x.title || x.titulo), 100), desc: str(x && (x.desc || x.descricao), 300), url: str(x && (x.url || x.link), 2000) })).filter(x => x.title || x.url);
+  const social = c.socials && typeof c.socials === 'object' ? c.socials : {};
+  out.socials = { whatsapp: str(social.whatsapp || out.loja.whats, 2000), tiktok: str(social.tiktok || out.loja.tiktok, 2000), discord: str(social.discord || out.loja.discord, 2000) };
   return out;
 }
 function seedCatalog() {
@@ -569,7 +571,7 @@ async function api(req, res, u) {
       q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
       return q;
     });
-    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), pixAuto: !!MP_TOKEN });
+    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), downloads: c.downloads || [], socials: c.socials || {}, pixAuto: !!MP_TOKEN });
   }
   if (m === 'POST' && p === '/api/coupon') {
     if (limited(ip, 'coupon', 30, 600000)) throw httpErr(429, 'Muitas tentativas');
@@ -742,6 +744,7 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   store = DATABASE_URL ? pgStore() : fileStore();
   const loaded = await store.load();
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
+  S.catalog = cleanCatalog(S.catalog);
   S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.users = S.core.users || {}; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
   if (!loaded) await persist('catalog', 'core');
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');

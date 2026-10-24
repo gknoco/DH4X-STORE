@@ -94,12 +94,12 @@ function persist(...which) {
 }
 
 /* ------------------------------ catálogo ---------------------------------- */
-const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pix', 'pixNome', 'pixCidade', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
+const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
   const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
-  LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = /logo|Img/.test(k) ? img(L[k]) : str(L[k], 600); });
+  LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
   if (!out.loja.nome) out.loja.nome = 'Minha Loja';
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
@@ -237,7 +237,8 @@ async function createPix(o, req) {
     payment_method_id: 'pix',
     external_reference: 'DH4X-' + o.n,
     date_of_expiration: mpDate(o.expiresAt),
-    payer: { email: o.email, first_name: parts[0], last_name: parts.slice(1).join(' ') || parts[0] }
+    payer: { email: o.email, first_name: parts[0], last_name: parts.slice(1).join(' ') || parts[0] },
+    metadata: { receiver_name: str(S.catalog.loja.pixNome || '', 120), store_name: str(S.catalog.loja.nome || 'DH4X STORE', 120) }
   };
   const base = baseUrl(req);
   const webhook = (ENV.WEBHOOK_URL || '').trim();
@@ -367,7 +368,7 @@ async function createOrder(b, req) {
 function viewOrder(o) {
   const ok = o.status === 'approved';
   return {
-    n: o.n, status: o.status, createdAt: o.createdAt, expiresAt: o.expiresAt, paidAt: o.paidAt || null,
+    n: o.n, token: o.token, status: o.status, createdAt: o.createdAt, expiresAt: o.expiresAt, paidAt: o.paidAt || null,
     nome: o.nome, email: o.email, dc: o.dc, sub: o.sub, desc: o.desc, total: o.total, cupom: o.cupom,
     manual: !!o.manual, reviewed: !!o.reviewed,
     items: o.items.map(i => ({ id: i.id, o: i.o, n: i.n, q: i.q, p: i.p, keys: ok ? i.keys : [], t: ok ? i.t : '' })),

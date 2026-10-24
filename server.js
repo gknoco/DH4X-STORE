@@ -26,6 +26,11 @@ const MANUAL_HOLD_MIN = Math.max(EXPIRE_MIN, 1440); // reserva manual também ex
 const DATABASE_URL = ENV.DATABASE_URL || '';
 const DATA_FILE = ENV.DATA_FILE || path.join(__dirname, 'data', 'db.json');
 const CORS = (ENV.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+const GOOGLE_CLIENT_ID = (ENV.GOOGLE_CLIENT_ID || '').trim();
+const GOOGLE_CLIENT_SECRET = (ENV.GOOGLE_CLIENT_SECRET || '').trim();
+const DISCORD_CLIENT_ID = (ENV.DISCORD_CLIENT_ID || '').trim();
+const DISCORD_CLIENT_SECRET = (ENV.DISCORD_CLIENT_SECRET || '').trim();
+const OAUTH_REDIRECT_BASE = (ENV.OAUTH_REDIRECT_BASE || PUBLIC_URL).replace(/\/+$/, '');
 
 /* ------------------------------ utilitários ------------------------------ */
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
@@ -394,6 +399,8 @@ const publicReviews = () => S.core.reviews.filter(r => r.ok).sort((a, b) => b.d 
 
 /* ------------------------------ segurança --------------------------------- */
 const sessions = new Map();
+const oauthStates = new Map();
+const oauthCodes = new Map();
 const fails = [];
 const hits = new Map();
 function limited(ip, key, max, windowMs) {
@@ -404,6 +411,8 @@ function limited(ip, key, max, windowMs) {
 setInterval(() => {
   const t = now();
   for (const [k, v] of sessions) if (v < t) sessions.delete(k);
+  for (const [k, v] of oauthStates) if (v.exp < t) oauthStates.delete(k);
+  for (const [k, v] of oauthCodes) if (v.exp < t) oauthCodes.delete(k);
   for (const [k, v] of hits) { const a = v.filter(x => t - x < 3600000); if (a.length) hits.set(k, a); else hits.delete(k); }
 }, 600000).unref();
 function safeEq(a, b) {
@@ -452,6 +461,7 @@ function send(res, status, data, extra) {
   }, extra || {}));
   res.end(body);
 }
+function redirect(res, location) { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); }
 function readBody(req, limit) {
   return new Promise((resolve, reject) => {
     let n = 0; const chunks = [];
@@ -462,8 +472,66 @@ function readBody(req, limit) {
 }
 const clientIp = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
 
+function oauthOrigin(req) {
+  return OAUTH_REDIRECT_BASE || ((String(req.headers['x-forwarded-proto'] || 'http').split(',')[0]) + '://' + String(req.headers.host || 'localhost'));
+}
+function oauthSettings(provider, req) {
+  const base = oauthOrigin(req), callback = base + '/api/auth/' + provider + '/callback';
+  if (provider === 'google' && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) return {
+    clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, callback,
+    authorize: 'https://accounts.google.com/o/oauth2/v2/auth', token: 'https://oauth2.googleapis.com/token', userinfo: 'https://openidconnect.googleapis.com/v1/userinfo',
+    scope: 'openid email profile'
+  };
+  if (provider === 'discord' && DISCORD_CLIENT_ID && DISCORD_CLIENT_SECRET) return {
+    clientId: DISCORD_CLIENT_ID, clientSecret: DISCORD_CLIENT_SECRET, callback,
+    authorize: 'https://discord.com/api/oauth2/authorize', token: 'https://discord.com/api/oauth2/token', userinfo: 'https://discord.com/api/users/@me',
+    scope: 'identify email'
+  };
+  return null;
+}
+async function oauthFetchJson(url, options) {
+  const r = await fetch(url, options); const text = await r.text(); let j = {};
+  try { j = text ? JSON.parse(text) : {}; } catch (_) { j = { raw: text }; }
+  if (!r.ok) throw httpErr(502, 'Falha OAuth ' + r.status);
+  return j;
+}
+function oauthFrontend(req, params) {
+  return oauthOrigin(req) + '/#/entrar?' + new URLSearchParams(params).toString();
+}
+async function oauthApi(req, res, u) {
+  const mm = u.pathname.match(/^\/api\/auth\/(google|discord)(\/callback)?$/);
+  if (!mm) return false;
+  const provider = mm[1], callback = !!mm[2], settings = oauthSettings(provider, req);
+  if (!settings) { redirect(res, oauthFrontend(req, { oauth_error: provider + '_not_configured' })); return true; }
+  if (!callback) {
+    const state = rid(18); oauthStates.set(state, { provider, exp: now() + 10 * 60000 });
+    const q = new URLSearchParams({ client_id: settings.clientId, redirect_uri: settings.callback, response_type: 'code', scope: settings.scope, state });
+    if (provider === 'google') q.set('access_type', 'online');
+    redirect(res, settings.authorize + '?' + q.toString()); return true;
+  }
+  const state = String(u.searchParams.get('state') || ''), code = String(u.searchParams.get('code') || ''), saved = oauthStates.get(state);
+  oauthStates.delete(state);
+  if (!saved || saved.provider !== provider || !code) { redirect(res, oauthFrontend(req, { oauth_error: 'oauth_state_invalid' })); return true; }
+  try {
+    const token = await oauthFetchJson(settings.token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: settings.clientId, client_secret: settings.clientSecret, code, grant_type: 'authorization_code', redirect_uri: settings.callback }) });
+    const profile = await oauthFetchJson(settings.userinfo, { headers: { Authorization: 'Bearer ' + token.access_token } });
+    const email = str(profile.email || '', 160), name = str(profile.name || profile.global_name || profile.username || (email.split('@')[0] || 'Usuário'), 80);
+    if (!EMAIL_RE.test(email)) throw httpErr(400, 'O provedor não devolveu um e-mail válido');
+    const oneTime = rid(24); oauthCodes.set(oneTime, { exp: now() + 5 * 60000, user: { nome: name, email, provider, dc: provider === 'discord' ? str(profile.username || '', 80) : '' } });
+    redirect(res, oauthFrontend(req, { oauth_code: oneTime }));
+  } catch (e) { redirect(res, oauthFrontend(req, { oauth_error: 'oauth_failed' })); }
+  return true;
+}
+
 async function api(req, res, u) {
   const m = req.method, p = u.pathname, ip = clientIp(req);
+
+  if (m === 'GET' && (await oauthApi(req, res, u))) return;
+  if (m === 'GET' && p === '/api/auth/session') {
+    const code = String(u.searchParams.get('code') || ''), item = oauthCodes.get(code);
+    if (!item || item.exp < now()) throw httpErr(401, 'Código OAuth expirado');
+    oauthCodes.delete(code); return send(res, 200, { user: item.user });
+  }
 
   /* ----- público ----- */
   if (m === 'GET' && p === '/api/catalog') {

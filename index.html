@@ -19,9 +19,10 @@ const MP_API = (ENV.MERCADO_PAGO_API_URL || 'https://api.mercadopago.com').repla
 const ADMIN_PW = (ENV.ADMIN_PASSWORD || 'GK').trim().toLowerCase();
 const PUBLIC_URL = (ENV.PUBLIC_URL || ENV.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
 const WH_SECRET = (ENV.MERCADO_PAGO_WEBHOOK_SECRET || '').trim();
-// Cada pagamento Pix e respectiva reserva de estoque expiram após 20 minutos.
-const EXPIRE_MIN = 20;
-const MANUAL_HOLD_MIN = 20;
+// Por padrão, um pedido Pix permanece aberto por 24 horas. Pode ser reduzido
+// no Render com PIX_EXPIRE_MIN, sem permitir menos de 30 minutos.
+const EXPIRE_MIN = Math.max(30, Number.isFinite(+ENV.PIX_EXPIRE_MIN) && +ENV.PIX_EXPIRE_MIN > 0 ? +ENV.PIX_EXPIRE_MIN : 1440);
+const MANUAL_HOLD_MIN = Math.max(EXPIRE_MIN, 1440); // reserva manual também expira em 24h
 const DATABASE_URL = ENV.DATABASE_URL || '';
 const DATA_FILE = ENV.DATA_FILE || path.join(__dirname, 'data', 'db.json');
 const CORS = (ENV.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -598,14 +599,9 @@ async function api(req, res, u) {
   if (m === 'GET' && (mm = p.match(/^\/api\/orders\/([A-Za-z0-9_-]{20,40})$/))) {
     const o = orderByToken(mm[1]);
     if (!o) throw httpErr(404, 'Pedido não encontrado');
-    const expiredAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
-    if (o.status === 'pending' && o.mp && MP_TOKEN && (now() >= expiredAt || now() - (lastCheck.get(o.n) || 0) > 6000)) {
+    if (o.status === 'pending' && o.mp && MP_TOKEN && now() - (lastCheck.get(o.n) || 0) > 6000) {
       lastCheck.set(o.n, now());
       try { await syncPayment(o.mp.id); } catch (e) { log('Falha ao consultar pagamento', o.n, e.message); }
-    }
-    if (o.status === 'pending' && now() >= expiredAt) {
-      await expireOrder(o, 'Pix expirado após 20 minutos');
-      await cancelMp(o);
     }
     return send(res, 200, viewOrder(o));
   }
@@ -737,13 +733,12 @@ const server = http.createServer(async (req, res) => {
 setInterval(async () => {
   try {
     for (const o of Object.values(S.core.orders)) {
-      const expiresAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
-      if (o.status !== 'pending' || now() < expiresAt) continue;
-      if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { /* tenta cancelar mesmo se o provedor estiver indisponível */ } }
-      if (o.status === 'pending') { await expireOrder(o, 'Pix expirado após 20 minutos'); await cancelMp(o); }
+      if (o.status !== 'pending' || now() <= o.expiresAt + 60000) continue;
+      if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { /* tenta de novo no próximo ciclo */ } }
+      if (o.status === 'pending') { await expireOrder(o, 'Tempo esgotado'); cancelMp(o); }
     }
   } catch (e) { console.error('Rotina de expiração:', e.message); }
-}, 15000).unref();
+}, 60000).unref();
 
 process.on('unhandledRejection', e => console.error('Promessa rejeitada:', e && e.message || e));
 process.on('uncaughtException', e => console.error('Exceção:', e && e.stack || e));
@@ -754,13 +749,6 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
   S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.users = S.core.users || {}; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
   if (!loaded) await persist('catalog', 'core');
-  // Processa pagamentos vencidos na inicialização (por exemplo, após o serviço dormir no Render).
-  for (const o of Object.values(S.core.orders)) {
-    const expiresAt = Number(o.expiresAt) || ((Number(o.createdAt) || now()) + EXPIRE_MIN * 60000);
-    if (o.status !== 'pending' || now() < expiresAt) continue;
-    if (o.mp && MP_TOKEN) { try { await syncPayment(o.mp.id); } catch (e) { log('Falha ao verificar Pix vencido na inicialização', o.n, e.message); } }
-    if (o.status === 'pending') { await expireOrder(o, 'Pix expirado após 20 minutos'); await cancelMp(o); }
-  }
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
   if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');
   server.listen(PORT, '0.0.0.0', () => log('DH4X STORE rodando na porta', PORT, '| Pix automático:', MP_TOKEN ? 'ligado' : 'desligado', '| banco:', DATABASE_URL ? 'Postgres' : 'arquivo'));

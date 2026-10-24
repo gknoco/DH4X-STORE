@@ -19,8 +19,10 @@ const MP_API = (ENV.MERCADO_PAGO_API_URL || 'https://api.mercadopago.com').repla
 const ADMIN_PW = (ENV.ADMIN_PASSWORD || 'GK').trim().toLowerCase();
 const PUBLIC_URL = (ENV.PUBLIC_URL || ENV.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
 const WH_SECRET = (ENV.MERCADO_PAGO_WEBHOOK_SECRET || '').trim();
-const EXPIRE_MIN = Math.max(30, +ENV.PIX_EXPIRE_MIN || 30);
-const MANUAL_HOLD_MIN = 120; // tempo que as keys ficam reservadas no modo Pix manual
+// Por padrão, um pedido Pix permanece aberto por 24 horas. Pode ser reduzido
+// no Render com PIX_EXPIRE_MIN, sem permitir menos de 30 minutos.
+const EXPIRE_MIN = Math.max(30, Number.isFinite(+ENV.PIX_EXPIRE_MIN) && +ENV.PIX_EXPIRE_MIN > 0 ? +ENV.PIX_EXPIRE_MIN : 1440);
+const MANUAL_HOLD_MIN = Math.max(EXPIRE_MIN, 1440); // reserva manual também expira em 24h
 const DATABASE_URL = ENV.DATABASE_URL || '';
 const DATA_FILE = ENV.DATA_FILE || path.join(__dirname, 'data', 'db.json');
 const CORS = (ENV.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -235,10 +237,12 @@ async function createPix(o, req) {
     payer: { email: o.email, first_name: parts[0], last_name: parts.slice(1).join(' ') || parts[0] }
   };
   const base = baseUrl(req);
-  if (/^https:\/\//.test(base)) body.notification_url = base + '/api/webhook/mercadopago';
+  const webhook = (ENV.WEBHOOK_URL || '').trim();
+  if (/^https:\/\//.test(webhook)) body.notification_url = webhook;
+  else if (/^https:\/\//.test(base)) body.notification_url = base + '/api/webhook/mercadopago';
   const r = await mp('POST', '/v1/payments', body, 'dh4x-' + o.n + '-' + o.token.slice(0, 10));
   const td = (r.point_of_interaction && r.point_of_interaction.transaction_data) || {};
-  if (!td.qr_code) throw new Error('Mercado Pago não devolveu o código Pix');
+  if (!td.qr_code || !td.qr_code_base64) throw new Error('Mercado Pago não devolveu o código Pix e QR Code Base64');
   o.mp = { id: String(r.id), status: r.status, code: td.qr_code, qr: td.qr_code_base64 || '', ticket: td.ticket_url || '' };
 }
 async function cancelMp(o) {
@@ -251,7 +255,8 @@ const orderByToken = t => Object.values(S.core.orders).find(o => o.token === t);
 
 async function approveOrder(o, via, manualItems) {
   if (o.status === 'approved') return { ok: true };
-  if (['pending', 'expired', 'rejected', 'nostock'].includes(o.status)) {
+  if (['expired', 'rejected'].includes(o.status)) return { ok: false, error: 'Pedido expirado ou recusado' };
+  if (['pending', 'nostock'].includes(o.status)) {
     const err = allocate(o);
     if (err) {
       o.status = 'nostock'; o.flag = 'Pago, mas sem keys em estoque'; o.paidAt = o.paidAt || now();
@@ -342,7 +347,13 @@ async function createOrder(b, req) {
   o.expiresAt = now() + EXPIRE_MIN * 60000;
   if (MP_TOKEN) {
     try { await createPix(o, req); }
-    catch (e) { log('Pix indisponível no pedido', o.n, '-', e.message); o.manual = true; o.flag = 'Pix automático indisponível: ' + e.message.slice(0, 120); }
+    catch (e) {
+      // Com o token configurado, nunca devolvemos um pedido sem QR/código.
+      // O número é consumido e não volta para trás, mas as keys são libertadas.
+      release(o); delete S.core.orders[o.n];
+      await persist('core');
+      throw httpErr(502, 'Mercado Pago não gerou o Pix: ' + e.message.slice(0, 160));
+    }
   } else { o.manual = true; }
   if (o.manual) o.expiresAt = now() + MANUAL_HOLD_MIN * 60000;
   await persist('core');
@@ -508,7 +519,7 @@ async function api(req, res, u) {
     await persist('core');
     return send(res, 201, { ok: true });
   }
-  if ((m === 'POST' || m === 'GET') && p === '/api/webhook/mercadopago') {
+  if ((m === 'POST' || m === 'GET') && (p === '/api/webhook/mercadopago' || p === '/api/mercadopago/webhook')) {
     let b = {};
     if (m === 'POST') { try { b = await readBody(req, 100000); } catch (e) { b = {}; } }
     const id = u.searchParams.get('data.id') || (b.data && b.data.id) || ((u.searchParams.get('topic') === 'payment' || b.type === 'payment') ? (u.searchParams.get('id') || b.id) : '');
@@ -552,7 +563,9 @@ async function api(req, res, u) {
       return send(res, 200, { ok: true, rec: r });
     }
     if (m === 'GET' && p === '/api/admin/orders') {
-      return send(res, 200, Object.values(S.core.orders).sort((a, b) => b.n - a.n).map(adminOrder));
+      const status = String(u.searchParams.get('status') || '').toLowerCase();
+      const allowed = status === 'pending' ? ['pending'] : status === 'approved' ? ['approved'] : ['pending', 'approved'];
+      return send(res, 200, Object.values(S.core.orders).filter(o => allowed.includes(o.status)).sort((a, b) => b.n - a.n).map(adminOrder));
     }
     if (m === 'POST' && (mm = p.match(/^\/api\/admin\/orders\/(\d+)\/approve$/))) {
       const o = S.core.orders[mm[1]]; if (!o) throw httpErr(404, 'Pedido não encontrado');
@@ -631,7 +644,7 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   store = DATABASE_URL ? pgStore() : fileStore();
   const loaded = await store.load();
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
-  S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.seq = S.core.seq || 0;
+  S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
   if (!loaded) await persist('catalog', 'core');
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
   if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');

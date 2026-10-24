@@ -97,19 +97,10 @@ function persist(...which) {
 const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
-  const out = { loja: {}, downloads: [], socials: { whatsapp: '', tiktok: '', discord: '' }, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
+  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
-  // Nome vazio é válido: o cabeçalho deve ficar sem texto.
-  const rawDownloads = Array.isArray(c.downloads) ? c.downloads : [];
-  out.downloads = rawDownloads.slice(0, 20).map((x, i) => ({
-    id: str(x && x.id || 'dl' + (i + 1), 40),
-    title: str(x && (x.title || x.titulo), 100),
-    description: str(x && (x.description || x.descricao), 240),
-    url: str(x && (x.url || x.link), 2000)
-  })).filter(x => x.title || x.url);
-  const social = c.socials && typeof c.socials === 'object' ? c.socials : {};
-  out.socials = { whatsapp: str(social.whatsapp, 2000), tiktok: str(social.tiktok, 2000), discord: str(social.discord, 2000) };
+  if (!out.loja.nome) out.loja.nome = 'Minha Loja';
   const ids = new Set();
   (Array.isArray(c.cats) ? c.cats : []).slice(0, 100).forEach(x => {
     if (!x || !x.id || ids.has(String(x.id))) return;
@@ -155,8 +146,6 @@ function seedCatalog() {
         email: 'gknovodcdc@gmail.com', cor: '#7c5cff', selo: 'sim',
         pixInfo: 'Pague pelo QR Code ou Pix Copia e Cola. A aprovação é automática pelo Mercado Pago.'
       },
-      downloads: [{ id: 'drip-wire', title: 'Download Drip Wire', description: 'Baixe a versão mais recente do Drip Wire.', url: '' }, { id: 'updates', title: 'Atualizações DH4X', description: 'Novidades e arquivos oficiais da loja.', url: '' }],
-      socials: { whatsapp: 'https://wa.me/15089658290?s=t', tiktok: '', discord: 'https://discord.gg/SHkAnAWNVd' },
       cats: [
         { id: 'android', nome: 'Android', desc: 'Produtos Android com entrega digital imediata.', on: true },
         { id: 'ios', nome: 'iOS', desc: 'Soluções iOS sem jailbreak e com suporte DH4X.', on: true },
@@ -580,7 +569,7 @@ async function api(req, res, u) {
       q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
       return q;
     });
-    return send(res, 200, { loja: c.loja, downloads: c.downloads || [], socials: c.socials || {}, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), pixAuto: !!MP_TOKEN });
+    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), pixAuto: !!MP_TOKEN });
   }
   if (m === 'POST' && p === '/api/coupon') {
     if (limited(ip, 'coupon', 30, 600000)) throw httpErr(429, 'Muitas tentativas');

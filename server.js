@@ -112,11 +112,9 @@ function cleanCatalog(c) {
     if (x.de != null && x.de !== '' && num(x.de) > 0) o.de = round2(num(x.de));
     if (x.tag) o.tag = str(x.tag, 30);
     if (img(x.img)) o.img = img(x.img);
-    if (x.e != null && x.e !== '' && Number.isFinite(+x.e)) o.e = Math.max(0, Math.floor(+x.e));
     o.f = (Array.isArray(x.f) ? x.f : []).slice(0, 20).map(v => str(v, 200)).filter(Boolean);
     o.ops = (Array.isArray(x.ops) ? x.ops : []).slice(0, 30).filter(z => z && z.k).map(z => {
       const r = { k: str(z.k, 40), n: str(z.n, 80) || 'Opção', p: Math.max(0, round2(num(z.p))) };
-      if (z.e != null && z.e !== '' && Number.isFinite(+z.e)) r.e = Math.max(0, Math.floor(+z.e));
       return r;
     });
     out.prods.push(o);
@@ -166,7 +164,7 @@ function seedCatalog() {
 }
 
 /* ------------------------------ estoque (keys) ---------------------------- */
-const keyRec = pid => (S.core.keys[pid] = S.core.keys[pid] || { t: '', track: {}, k: {} });
+const keyRec = pid => (S.core.keys[pid] = S.core.keys[pid] || { t: '', tm: {}, track: {}, k: {} });
 const tracked = (pid, opt) => !!(S.core.keys[pid] && S.core.keys[pid].track && S.core.keys[pid].track[opt || '']);
 const poolRef = (pid, opt) => { const r = keyRec(pid); return (r.k[opt || ''] = r.k[opt || ''] || []); };
 const poolLen = (pid, opt) => ((S.core.keys[pid] && S.core.keys[pid].k && S.core.keys[pid].k[opt || '']) || []).length;
@@ -325,7 +323,8 @@ async function createOrder(b, req) {
     if (!(unit > 0)) throw httpErr(400, 'Produto sem preço: ' + p.n);
     const ex = list.find(i => i.id === p.id && i.o === ok);
     if (ex) { ex.q += q; if (ex.q > 20) throw httpErr(400, 'Quantidade inválida'); continue; }
-    list.push({ id: p.id, o: ok, n: nm, q, p: round2(unit), keys: [], t: (S.core.keys[p.id] && S.core.keys[p.id].t) || '' });
+    const kr = S.core.keys[p.id] || {};
+    list.push({ id: p.id, o: ok, n: nm, q, p: round2(unit), keys: [], t: ok ? ((kr.tm && kr.tm[ok]) || kr.t || '') : (kr.t || '') });
   }
   const sub = round2(list.reduce((s, i) => s + i.p * i.q, 0));
   let pct = 0, cupom = '';
@@ -552,6 +551,10 @@ async function api(req, res, u) {
       if (!prodById(pid)) throw httpErr(404, 'Produto não encontrado');
       const b = await readBody(req, 2e6), r = keyRec(pid), used = inUseKeys(pid);
       if (b.t != null) r.t = str(b.t, 6000);
+      if (b.tm && typeof b.tm === 'object') {
+        r.tm = {};
+        Object.keys(b.tm).slice(0, 30).forEach(k => { r.tm[str(k, 40)] = str(b.tm[k], 6000); });
+      }
       if (b.track && typeof b.track === 'object') Object.keys(b.track).forEach(k => { r.track[k] = !!b.track[k]; });
       if (b.k && typeof b.k === 'object') {
         Object.keys(b.k).forEach(opt => {

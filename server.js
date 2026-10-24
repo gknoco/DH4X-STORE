@@ -94,7 +94,7 @@ function persist(...which) {
 }
 
 /* ------------------------------ catálogo ---------------------------------- */
-const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pix', 'pixNome', 'pixCidade', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo'];
+const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pix', 'pixNome', 'pixCidade', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
   const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
@@ -313,6 +313,7 @@ async function createOrder(b, req) {
   const nome = str(b.nome, 80), email = str(b.email, 120).toLowerCase(), dc = str(b.dc, 40);
   if (nome.length < 3) throw httpErr(400, 'Informe seu nome completo');
   if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+  accountUser({ email, nome, dc, provider: str(b.provider || 'email', 20), avatar: b.avatar });
   const list = [];
   for (const x of items) {
     const p = prodById(str(x && x.id, 40)), q = Math.floor(num(x && x.q));
@@ -396,6 +397,23 @@ async function resolveImage(raw) {
 
 /* ------------------------------ avaliações -------------------------------- */
 const publicReviews = () => S.core.reviews.filter(r => r.ok).sort((a, b) => b.d - a.d).slice(0, 30).map(r => ({ n: r.n, s: r.s, t: r.t, p: r.p, d: r.d }));
+function accountUser(profile) {
+  const email = str(profile && profile.email, 160).toLowerCase();
+  if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+  S.core.users = S.core.users || {};
+  const old = S.core.users[email] || {};
+  const u = S.core.users[email] = Object.assign({}, old, {
+    email, nome: str(profile.nome || old.nome || email.split('@')[0], 80),
+    provider: str(profile.provider || old.provider || 'email', 20),
+    dc: str(profile.dc || old.dc, 80), avatar: img(profile.avatar || old.avatar) || old.avatar || ''
+  }, { updatedAt: now() });
+  persist('core');
+  return u;
+}
+function accountOrders(email) {
+  const e = str(email, 160).toLowerCase();
+  return Object.values(S.core.orders).filter(o => o.email === e).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map(viewOrder);
+}
 
 /* ------------------------------ segurança --------------------------------- */
 const sessions = new Map();
@@ -517,7 +535,9 @@ async function oauthApi(req, res, u) {
     const profile = await oauthFetchJson(settings.userinfo, { headers: { Authorization: 'Bearer ' + token.access_token } });
     const email = str(profile.email || '', 160), name = str(profile.name || profile.global_name || profile.username || (email.split('@')[0] || 'Usuário'), 80);
     if (!EMAIL_RE.test(email)) throw httpErr(400, 'O provedor não devolveu um e-mail válido');
-    const oneTime = rid(24); oauthCodes.set(oneTime, { exp: now() + 5 * 60000, user: { nome: name, email, provider, dc: provider === 'discord' ? str(profile.username || '', 80) : '' } });
+    const avatar = provider === 'google' ? str(profile.picture || '', 2000) : (profile.avatar && profile.id ? 'https://cdn.discordapp.com/avatars/' + encodeURIComponent(profile.id) + '/' + encodeURIComponent(profile.avatar) + '.png?size=128' : '');
+    const user = accountUser({ nome: name, email, provider, dc: provider === 'discord' ? str(profile.username || '', 80) : '', avatar });
+    const oneTime = rid(24); oauthCodes.set(oneTime, { exp: now() + 5 * 60000, user });
     redirect(res, oauthFrontend(req, { oauth_code: oneTime }));
   } catch (e) { redirect(res, oauthFrontend(req, { oauth_error: 'oauth_failed' })); }
   return true;
@@ -527,10 +547,16 @@ async function api(req, res, u) {
   const m = req.method, p = u.pathname, ip = clientIp(req);
 
   if (m === 'GET' && (await oauthApi(req, res, u))) return;
+  if (m === 'POST' && p === '/api/auth/email') {
+    const b = await readBody(req, 5000), email = str(b.email, 160).toLowerCase();
+    if (!EMAIL_RE.test(email)) throw httpErr(400, 'Informe um e-mail válido');
+    const user = accountUser({ email, nome: str(b.nome || email.split('@')[0], 80), provider: 'email', avatar: b.avatar });
+    return send(res, 200, { user, orders: accountOrders(email) });
+  }
   if (m === 'GET' && p === '/api/auth/session') {
     const code = String(u.searchParams.get('code') || ''), item = oauthCodes.get(code);
     if (!item || item.exp < now()) throw httpErr(401, 'Código OAuth expirado');
-    oauthCodes.delete(code); return send(res, 200, { user: item.user });
+    oauthCodes.delete(code); return send(res, 200, { user: item.user, orders: accountOrders(item.user.email) });
   }
 
   /* ----- público ----- */
@@ -581,7 +607,7 @@ async function api(req, res, u) {
     const g = v => Math.min(5, Math.max(1, Math.floor(num(v, 5)))), t = str(b.t, 400), n = str(b.nome, 30);
     if (t.length < 10) throw httpErr(400, 'Escreva pelo menos 10 caracteres');
     if (n.length < 2) throw httpErr(400, 'Informe seu nome');
-    S.core.reviews.push({ id: rid(6), n, s: g(b.s), e: g(b.e), a: g(b.a), q: g(b.q), rec: b.rec ? 1 : 0, t, p: o.items[0].n, d: now(), ok: false, on: o.n });
+    S.core.reviews.push({ id: rid(6), n, s: g(b.s), e: g(b.e), a: g(b.a), q: g(b.q), rec: b.rec ? 1 : 0, t, p: o.items[0].n, d: now(), ok: true, on: o.n });
     o.reviewed = true;
     await persist('core');
     return send(res, 201, { ok: true });
@@ -715,7 +741,7 @@ process.on('uncaughtException', e => console.error('Exceção:', e && e.stack ||
   store = DATABASE_URL ? pgStore() : fileStore();
   const loaded = await store.load();
   S = loaded && loaded.catalog && loaded.core ? loaded : { catalog: seedCatalog(), core: { seq: 0, keys: {}, orders: {}, reviews: [] } };
-  S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
+  S.core.keys = S.core.keys || {}; S.core.orders = S.core.orders || {}; S.core.reviews = S.core.reviews || []; S.core.users = S.core.users || {}; S.core.seq = Math.max(Number(S.core.seq) || 0, ...Object.keys(S.core.orders).map(Number).filter(Number.isFinite), ...Object.values(S.core.orders).map(o => Number(o.n) || 0));
   if (!loaded) await persist('catalog', 'core');
   if (!DATABASE_URL && ENV.RENDER) console.warn('ATENÇÃO: sem DATABASE_URL os dados (pedidos e keys) se perdem a cada reinício no Render. Configure um Postgres (veja o README).');
   if (!MP_TOKEN) console.warn('ATENÇÃO: MERCADO_PAGO_ACCESS_TOKEN não configurado — o site funcionará só com Pix manual.');

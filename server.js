@@ -97,7 +97,7 @@ function persist(...which) {
 const LOJA_FIELDS = ['nome', 'aviso', 'heroT', 'heroP', 'heroImg', 'logo', 'discord', 'whats', 'email', 'pixNome', 'pixInfo', 'link', 'cor', 'fx', 'fxq', 'fxc', 'selo', 'logoTopSize', 'logoBottomSize'];
 function cleanCatalog(c) {
   c = c && typeof c === 'object' ? c : {};
-  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000) };
+  const out = { loja: {}, cats: [], prods: [], cupons: {}, faq: [], termos: str(c.termos, 20000), priv: str(c.priv, 20000), downloads: { items: [], socials: [] } };
   const L = c.loja || {};
   LOJA_FIELDS.forEach(k => { if (L[k] != null) out.loja[k] = (k === 'logo' || k === 'heroImg') ? img(L[k]) : str(L[k], 600); });
   // Nome vazio é preservado para deixar o espaço ao lado da logo limpo.
@@ -130,6 +130,11 @@ function cleanCatalog(c) {
       if (code && v > 0 && v <= 100) out.cupons[code] = v;
     });
   }
+  const rawDl = c.downloads && typeof c.downloads === 'object' ? c.downloads : {};
+  const cleanLink = v => { const x = str(v, 2000); return /^https?:\/\//i.test(x) ? x : ''; };
+  out.downloads.items = (Array.isArray(rawDl.items) ? rawDl.items : []).slice(0, 40).map(x => ({ title: str(x && x.title, 100) || 'Download', description: str(x && x.description, 240), url: cleanLink(x && x.url), icon: str(x && x.icon, 12) || '↓', badge: str(x && x.badge, 40) }));
+  const defaults = [{ key: 'whatsapp', title: 'Grupo | Atualizações', description: 'WhatsApp do grupo oficial', icon: '☏' }, { key: 'tiktok', title: 'TikTok Oficial', description: 'Siga para novidades!', icon: '♪' }, { key: 'discord', title: 'Discord Oficial', description: 'Suporte, updates e comunidade', icon: '●' }];
+  out.downloads.socials = defaults.map((d, i) => { const x = (Array.isArray(rawDl.socials) ? rawDl.socials : []).find(y => y && y.key === d.key) || (Array.isArray(rawDl.socials) ? rawDl.socials[i] : null) || {}; return { ...d, title: str(x.title, 100) || d.title, description: str(x.description, 240) || d.description, url: cleanLink(x.url || (d.key === 'whatsapp' ? (c.loja || {}).whats : d.key === 'discord' ? (c.loja || {}).discord : '')) }; });
   out.faq = (Array.isArray(c.faq) ? c.faq : []).slice(0, 50).filter(f => Array.isArray(f) && f[0]).map(f => [str(f[0], 200), str(f[1], 1000)]);
   return out;
 }
@@ -569,7 +574,7 @@ async function api(req, res, u) {
       q.ops = (x.ops || []).map(o => { const r = Object.assign({}, o); if (tracked(x.id, o.k)) r.e = poolLen(x.id, o.k); return r; });
       return q;
     });
-    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, revs: publicReviews(), pixAuto: !!MP_TOKEN });
+    return send(res, 200, { loja: c.loja, cats: c.cats, prods, faq: c.faq, termos: c.termos, priv: c.priv, downloads: c.downloads, revs: publicReviews(), pixAuto: !!MP_TOKEN });
   }
   if (m === 'POST' && p === '/api/coupon') {
     if (limited(ip, 'coupon', 30, 600000)) throw httpErr(429, 'Muitas tentativas');
